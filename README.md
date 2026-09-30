@@ -29,6 +29,14 @@ npm run build
 npm run preview
 ```
 
+## Deployment
+
+The repository includes `vercel.json` for a Vite deployment using `npm ci`, `npm run build`, and the `dist` output directory. Connect `vizualmodel/solar-system` to its own Vercel project, with `main` as the production branch. Git-connected branches and pull requests can use preview deployments.
+
+Enable **Git LFS** in the Vercel project's Git settings before deploying: `public/textures/sky/starmap_2020_8k.exr` must contain the actual star map, not an LFS pointer. The intended production domain is `solar-system.vizualmodel.ai`; add it to the project and use the DNS record Vercel provides.
+
+If downloading the source as a ZIP instead of cloning with Git LFS, run `npm run sky-data` after extracting to restore the full star map before running the application.
+
 ## First milestone
 
 - Sun, eight planets, twelve moons; local texture maps for the Sun, planets and Earth's Moon.
