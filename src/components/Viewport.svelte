@@ -9,6 +9,7 @@
  let { id,data,positions }: {id:string;data:Ephemeris;positions:Record<string,Vec3>}=$props();
  let host:HTMLDivElement;let renderer:SolarRenderer|undefined;let error=$state('');
  const view=$derived($scenario.views.find(v=>v.id===id)!);
+ onMount(()=>{const capture=()=>renderer?.captureCamera();window.addEventListener('solar:save-cameras',capture);return ()=>window.removeEventListener('solar:save-cameras',capture);});
  onMount(()=>{try{renderer=new SolarRenderer(host,view,data,(camera,target)=>updateView(id,{camera,target}),body=>focus(id,body),message=>status.set(message));renderer.draw($scenario.time,positions);}catch(e){error='3D rendering could not start. This browser needs WebGL 2 support.';console.error(e);}return ()=>renderer?.dispose();});
  $effect(()=>{const v=view;if(renderer)renderer.configure(v);});
  // OrbitControls damping continues while the shared simulation is paused.

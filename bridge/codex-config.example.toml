@@ -1,0 +1,8 @@
+# Merge into your Codex config.toml. Adjust both paths for another checkout.
+# Uses the local Node installation directly: no npm chatter on MCP stdout.
+[mcp_servers.solar_system]
+command = "node"
+args = ["--import", "tsx", "C:/dev/blu/solar-system/bridge/server.ts"]
+cwd = "C:/dev/blu/solar-system"
+startup_timeout_sec = 15
+tool_timeout_sec = 10

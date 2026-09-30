@@ -31,6 +31,8 @@ npm run preview
 
 ## Deployment
 
+For the development-only VS Code Codex experiment, see [Local Codex bridge](bridge/README.md). It uses the existing Vite server and is excluded from production builds.
+
 The application is hosted in the `solar-system` Vercel project under the `vizualmodel-projects` team. Its public address is https://solar-system-ashen-one.vercel.app. Use this address for the catalogue's live application link. Each blueprint can use its own Vercel project address without additional DNS setup.
 
 The repository includes `vercel.json` for a Vite deployment using `npm ci`, `npm run build`, and the `dist` output directory. Connect `vizualmodel/solar-system` to its own Vercel project, with `main` as the production branch. Git-connected branches and pull requests can use preview deployments.
@@ -53,6 +55,12 @@ If downloading the source as a ZIP instead of cloning with Git LFS, run `npm run
 Drag to orbit, right-drag to pan, scroll/pinch to zoom. Click a body label or use Camera settings to focus. Click inside a view to select which view the settings affect. Overlay panels can be toggled from the top-right menu.
 
 ## Architecture
+
+### Next closest approach
+
+Open **Distance charts** in the top toolbar, choose two different planets in the Distance explorer selectors, then click **Next closest approach**. The simulation jumps to the first future local minimum in physical separation and pauses there. Cameras, views, and layout are unchanged. Sun/moon selections and identical planets disable the button. If no event occurs before the selected TO date, the app explains this and leaves the simulation unchanged.
+
+The search uses the same approximate orbital model as the simulation, scans distance slopes every six hours, and refines a minimum to about one second numerically. It skips the current event using a one-minute tolerance so successive clicks advance. These are model-derived minima, not independently verified astronomical predictions. The chart's existing 100-sample minimum is a separate coarse overview and may differ.
 
 `src/lib/ephemeris.ts` is the pure physical model (AU, days, J2000 ecliptic). `catalog.ts` describes bodies. `scenario.ts` owns serializable configuration and validation. `store.ts` manages the shared clock, persistence, layouts and the command boundary. `renderer.ts` owns each view's Three.js resources, floating origin, presentation scaling and camera controls. Svelte components own the UI. The rendering layer never feeds magnified positions back into physics.
 

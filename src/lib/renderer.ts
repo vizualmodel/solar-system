@@ -93,5 +93,6 @@ export class SolarRenderer {
   this.renderer.clearDepth();
   this.renderer.render(this.scene,this.camera);
  }
+ captureCamera(){this.onCamera(this.camera.position.toArray() as Vec3,this.controls.target.toArray() as Vec3);}
  dispose(){this.disposed=true;this.sky.dispose();this.observer.disconnect();this.controls.dispose();this.scene.traverse(obj=>{const o=obj as THREE.Mesh;if(o.geometry)o.geometry.dispose();if(o.material){for(const m of Array.isArray(o.material)?o.material:[o.material]){const mat=m as THREE.MeshStandardMaterial;mat.map?.dispose();mat.dispose();}}});this.renderer.dispose();this.renderer.forceContextLoss();this.renderer.domElement.remove();this.labels.forEach(l=>l.remove());}
 }
