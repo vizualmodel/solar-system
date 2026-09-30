@@ -1,0 +1,15 @@
+<script lang="ts">
+ import { Play,Pause,SkipBack,SkipForward,RotateCcw } from 'lucide-svelte';
+ import { scenario,command,status } from '../lib/store';
+ import { MIN_TIME,MAX_TIME } from '../lib/scenario';
+ const iso=(ms:number)=>new Date(ms).toISOString().slice(0,16);
+ const display=(ms:number)=>new Date(ms).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric',timeZone:'UTC'});
+ function range(which:'start'|'end',value:string){const time=Date.parse(value+'Z');if(!Number.isFinite(time))return;scenario.update(s=>{const next={...s,[which]:time};if(next.start<MIN_TIME||next.end>MAX_TIME||next.start>=next.end){status.set('Choose an ordered time range within 2025–2030.');return s;}next.time=Math.min(next.end,Math.max(next.start,next.time));return next;});}
+</script>
+<footer class="timeline">
+ <div class="timeline-top"><div class="time-heading"><span class="eyebrow">SIMULATION TIME <span class="utc">UTC</span></span><input class="current-time" aria-label="Simulation date and time UTC" type="datetime-local" min={iso($scenario.start)} max={iso($scenario.end)} value={iso($scenario.time)} onchange={e=>{const t=Date.parse(e.currentTarget.value+'Z');if(Number.isFinite(t))command({type:'time',value:t});}}/></div>
+ <div class="playback"><button aria-label="Go to start" title="Go to start" onclick={()=>command({type:'time',value:$scenario.start})}><SkipBack size={17}/></button><button class="play-button" aria-label={$scenario.playing?'Pause':'Play'} onclick={()=>command({type:'play',value:!$scenario.playing})}>{#if $scenario.playing}<Pause size={19} fill="currentColor"/>{:else}<Play size={19} fill="currentColor"/>{/if}</button><button aria-label="Go to end" title="Go to end" onclick={()=>command({type:'time',value:$scenario.end})}><SkipForward size={17}/></button><div class="divider"></div><select aria-label="Simulation speed" value={$scenario.speed} onchange={e=>command({type:'speed',value:+e.currentTarget.value})}>{#each [-100,-10,-1,0.000011574074074,0.0416666667,1,10,30,100,365] as speed}<option value={speed}>{speed===0.000011574074074?'Real time':speed===0.0416666667?'1 hour / sec':`${speed} days / sec`}</option>{/each}</select></div>
+ <div class="timeline-note"><span class="live-dot"></span>All views synchronized</div></div>
+ <input class="scrubber" aria-label="Time scrubber" type="range" min={$scenario.start} max={$scenario.end} step="1000" value={$scenario.time} oninput={e=>command({type:'time',value:+e.currentTarget.value})}/>
+ <div class="timeline-bottom"><label>FROM <input aria-label="Start date UTC" type="datetime-local" min={iso(MIN_TIME)} max={iso(MAX_TIME)} value={iso($scenario.start)} onchange={e=>range('start',e.currentTarget.value)}/></label><span>{display($scenario.time)}</span><label>TO <input aria-label="End date UTC" type="datetime-local" min={iso(MIN_TIME)} max={iso(MAX_TIME)} value={iso($scenario.end)} onchange={e=>range('end',e.currentTarget.value)}/></label><button title="Reset time range" aria-label="Reset time range" onclick={()=>scenario.update(s=>({...s,start:MIN_TIME,end:MAX_TIME}))}><RotateCcw size={13}/></button></div>
+</footer>

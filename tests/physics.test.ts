@@ -1,0 +1,12 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { eccentricAnomaly,orbitalPoint,propagate,relativePosition,positions,distance,julianDate,type Elements,type Ephemeris } from '../src/lib/ephemeris';
+import { bodies,AU } from '../src/lib/catalog';
+import { MIN_TIME,MAX_TIME } from '../src/lib/scenario';
+const data=JSON.parse(readFileSync(new URL('../public/data/ephemeris.json',import.meta.url),'utf8')) as Ephemeris;
+test('Kepler solver converges for circular and highly eccentric orbits',()=>{for(const e of [0,.0167,.2056,.9,.99])for(const M of [-3,-1,0,.001,1,3]){const E=eccentricAnomaly(M,e);assert.ok(Math.abs(E-e*Math.sin(E)-M)<1e-11);}});
+test('ellipse periapsis, apoapsis, inclination and period are correct',()=>{const row:Elements=[2451545,.2,90,0,0,1,0,2];assert.ok(Math.abs(distance(orbitalPoint(row,0),[0,0,0])-1.6)<1e-12);assert.ok(Math.abs(distance(orbitalPoint(row,Math.PI),[0,0,0])-2.4)<1e-12);assert.ok(Math.abs(orbitalPoint(row,1)[1])<1e-12);assert.ok(distance(propagate(row,2451545),propagate(row,2451905))<1e-12);});
+test('bundled elements cover the supported range and have valid elliptic orbits',()=>{for(const b of bodies.filter(b=>b.parent)){const rows=data.bodies[b.id];assert.ok(rows.length>200,b.id);assert.ok(rows[0][0]<=julianDate(MIN_TIME));assert.ok(rows.at(-1)![0]>=julianDate(MAX_TIME));rows.forEach((r,i)=>{assert.equal(r.length,8);assert.ok(r.every(Number.isFinite));assert.ok(r[1]>=0&&r[1]<1);assert.ok(r[7]>0);if(i)assert.ok(r[0]>rows[i-1][0]);});}});
+test('propagation joins source epochs continuously',()=>{for(const rows of Object.values(data.bodies)){const jd=rows[10][0],before=relativePosition(rows,jd-1e-7),at=relativePosition(rows,jd),after=relativePosition(rows,jd+1e-7);assert.ok(distance(at,propagate(rows[10],jd))<1e-12);assert.ok(distance(before,after)<1e-6);}});
+test('physical distances remain plausible throughout the interval, including parent-relative moons',()=>{for(let i=0;i<=24;i++){const p=positions(data,MIN_TIME+(MAX_TIME-MIN_TIME)*i/24);assert.ok(distance(p.earth,p.sun)>.97&&distance(p.earth,p.sun)<1.03);const moon=distance(p.moon,p.earth)*AU;assert.ok(moon>340000&&moon<420000);const triton=distance(p.triton,p.neptune)*AU;assert.ok(triton>340000&&triton<370000);for(const v of Object.values(p))assert.ok(v.every(Number.isFinite));}});
