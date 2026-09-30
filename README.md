@@ -31,6 +31,8 @@ npm run preview
 
 ## Deployment
 
+The application is hosted in the `solar-system` Vercel project under the `vizualmodel-projects` team. Its public Vercel address is https://solar-system-ashen-one.vercel.app. The custom domain `solar-system.vizualmodel.ai` is assigned to the project and requires its DNS record to point to Vercel.
+
 The repository includes `vercel.json` for a Vite deployment using `npm ci`, `npm run build`, and the `dist` output directory. Connect `vizualmodel/solar-system` to its own Vercel project, with `main` as the production branch. Git-connected branches and pull requests can use preview deployments.
 
 Enable **Git LFS** in the Vercel project's Git settings before deploying: `public/textures/sky/starmap_2020_8k.exr` must contain the actual star map, not an LFS pointer. The intended production domain is `solar-system.vizualmodel.ai`; add it to the project and use the DNS record Vercel provides.
