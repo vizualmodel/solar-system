@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { nextClosestApproach } from '../src/lib/closest-approach';
 import { DAY, julianDate, positions, distance, type Ephemeris, type Elements } from '../src/lib/ephemeris';
-import { MIN_TIME, MAX_TIME } from '../src/lib/scenario';
+import { MIN_TIME, MAX_TIME } from '../src/lib/simulation-state';
 
 const actual = JSON.parse(readFileSync(new URL('../public/data/ephemeris.json', import.meta.url), 'utf8')) as Ephemeris;
 function circular(): Ephemeris {

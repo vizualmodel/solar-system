@@ -1,6 +1,6 @@
 import { byId } from './catalog';
 import { DAY, distance, julianDate, relativePosition, type Ephemeris } from './ephemeris';
-import { MIN_TIME, MAX_TIME } from './scenario';
+import { MIN_TIME, MAX_TIME } from './simulation-state';
 
 export interface ClosestApproach { time: number; distanceAU: number }
 

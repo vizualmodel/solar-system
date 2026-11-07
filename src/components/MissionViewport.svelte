@@ -1,0 +1,20 @@
+<script lang="ts">
+ import {simulationState} from '../lib/store';
+ import {missionById,seekMission} from '../lib/mission';
+ import {validateMissionContext,type MissionContext} from '../lib/mission-flight';
+ import {missionLayout} from '../lib/mission-views';
+ import MissionViewTree from './MissionViewTree.svelte';
+ import MissionDashboard from './MissionDashboard.svelte';
+ import MissionAudio from './MissionAudio.svelte';
+ let context=$state.raw<MissionContext>(),error=$state(''),collapsed=$state(false),attempt=$state(0);
+ const mission=$derived($simulationState.mission!);
+ const document=$derived(missionById.get(mission.id)!);
+ $effect(()=>{attempt;const url=document.context,abort=new AbortController();context=undefined;error='';void fetch(url,{signal:abort.signal}).then(r=>{if(!r.ok)throw new Error('Historical context could not load.');return r.json();}).then(validateMissionContext).then(d=>{if(!abort.signal.aborted)context=d;}).catch(e=>{if(!abort.signal.aborted)error=e.message;});return()=>abort.abort();});
+</script>
+<section class="mission-stage" aria-label="Apollo 11 mission view">
+ <div class="workspace"><aside class:collapsed aria-label="Mission chapters"><div class="heading"><h2>Apollo 11</h2><button aria-label={collapsed?'Expand mission chapters':'Collapse mission chapters'} onclick={()=>collapsed=!collapsed}>{collapsed?'+':'-'}</button></div>{#if !collapsed}<p>Choose a chapter, split a camera view, or pause to inspect.</p><nav aria-label="Apollo 11 chapters">{#each document.chapters as entry,index}<button class:current={index===mission.chapter} aria-current={index===mission.chapter?'step':undefined} onclick={()=>simulationState.update(s=>({...s,mission:seekMission(s.mission!,index)}))}><span>{String(index+1).padStart(2,'0')}</span><div>{entry.title}<small>T+{entry.start}</small></div></button>{/each}</nav><details><summary>Sources & accuracy</summary><p>{document.accuracy}</p><p>Physical spacecraft scale. Story cameras reset at chapter boundaries; other viewpoints remain independent.</p>{#each document.sources as source}<a href={source.url} target="_blank" rel="noreferrer">{source.title}</a>{/each}<a href="https://science.nasa.gov/3d-resources/" target="_blank" rel="noreferrer">NASA / Michael D. Carbajal - Saturn V and Lunar Module models</a><p>Columbia and launch complex: locally authored illustrative models. Exhaust and dashboard readings are reconstructions.</p></details>{/if}</aside><div class="views">{#if context}<MissionViewTree node={missionLayout(mission)} {context}/>{:else}<div class="loading" role={error?'alert':'status'}>{error||'Preparing historical scene...'}{#if error}<button onclick={()=>attempt++}>Retry mission assets</button>{/if}</div>{/if}</div></div>
+ {#if context&&mission.dashboardVisible!==false}<MissionDashboard {context}/>{/if}<MissionAudio/>
+</section>
+<style>
+ .mission-stage{position:absolute;inset:0;display:flex;flex-direction:column;overflow:hidden;gap:6px}.workspace{flex:1;min-height:0;display:flex;gap:6px}.views{flex:1;min-width:0;display:flex;position:relative}aside{width:235px;flex-shrink:0;background:#101923ed;padding:12px;overflow:auto;border:1px solid #ffffff20}aside.collapsed{width:125px}.heading{display:flex;justify-content:space-between;align-items:center}.heading h2{margin:4px 0;font-size:20px;font-weight:500;color:#e7d1b1}aside p{font-size:10px;line-height:1.6;color:#a7b4c3}nav{display:flex;flex-direction:column;gap:2px}nav button{justify-content:flex-start;text-align:left;font-size:10px;padding:7px 5px;line-height:1.4}nav button>span{min-width:24px;color:#a08259}nav button div{display:flex;flex-direction:column;gap:3px}nav small{font-size:9px;color:#8492a4}.current{background:#dfbd8920;color:#f6d9ad}details{font-size:10px;color:#a7b4c3;margin-top:15px;line-height:1.6}details a{display:block;margin:8px 0}.loading{margin:auto;text-align:center}.loading button{display:block;margin:12px auto}@media(max-width:900px){aside{width:180px}}@media(max-width:650px){aside{width:130px;padding:6px}aside.collapsed{width:80px}.heading h2{font-size:14px}}
+</style>

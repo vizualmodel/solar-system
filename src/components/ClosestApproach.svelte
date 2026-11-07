@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { command, scenario, status } from '../lib/store';
+  import { command, simulationState, status } from '../lib/store';
   import { byId } from '../lib/catalog';
   import { nextClosestApproach } from '../lib/closest-approach';
   import type { Ephemeris } from '../lib/ephemeris';
@@ -9,7 +9,7 @@
   $effect(() => { from; to; message = ''; });
   function jump() {
     try {
-      const result = nextClosestApproach(data, from, to, $scenario.time, $scenario.end);
+      const result = nextClosestApproach(data, from, to, $simulationState.time, $simulationState.end);
       if (!result) {
         message = 'No next closest approach before the selected TO date. Extend the time range if possible.';
       } else {

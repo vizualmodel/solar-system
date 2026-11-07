@@ -1,0 +1,21 @@
+{
+  "credit": "NASA · Apollo 11 historical mission recordings",
+  "source": "https://www.nasa.gov/historical-sounds/",
+  "clips": [
+    {
+      "id": "launch",
+      "title": "We have a lift-off",
+      "url": "https://www.nasa.gov/wp-content/uploads/2015/01/590320main_ringtone_apollo11_countdown.mp3"
+    },
+    {
+      "id": "landing",
+      "title": "Eagle has landed",
+      "url": "https://www.nasa.gov/wp-content/uploads/2015/01/569462main_eagle_has_landed.mp3"
+    },
+    {
+      "id": "landing-extended",
+      "title": "Eagle has landed — extended crew/ground exchange",
+      "url": "https://www.nasa.gov/wp-content/uploads/2015/01/590333main_ringtone_eagleHasLanded_extended.mp3"
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "vizualmodel/solar-system",
+  "name": "Solar System",
+  "version": "0.1.0",
+  "description": "Explore our celestial neighbourhood in Solar Observatory. Inspect planetary motion, compare views, and investigate the model with its companion.",
+  "applications": [{
+    "id": "observatory", "name": "Solar Observatory", "url": "http://127.0.0.1:5180/", "mode": "area", "adapter": "companion",
+    "launch": { "command": "npm.cmd", "args": ["run", "companion", "--", "--no-open"], "cwd": "." },
+    "mcp": { "name": "solar_companion", "transport": "stdio", "command": "node", "args": ["--import", "tsx", "companion/mcp.ts"], "cwd": "." }
+  }],
+  "references": [
+    {"id":"guide","name":"Model guide & scientific limitations","kind":"Documentation","url":"./README.md"},
+    {"id":"horizons","name":"NASA / JPL Horizons","kind":"Data source","url":"https://ssd.jpl.nasa.gov/horizons/"},
+    {"id":"tools","name":"Companion tool reference","kind":"Documentation","url":"./docs/mcp-controls.md"}
+  ],
+  "tiles": [
+    {"id":"simulator","caption":"Solar System Simulator","description":"Launch the existing Solar Observatory application.","image":"./workspace/previews/solar-preview.jpg","target":{"type":"application","id":"observatory"},"mode":"area"},
+    {"id":"positions","caption":"Planetary Positions","description":"Open the observatory. Use its timeline and camera controls to inspect positions.","image":"./workspace/previews/positions-preview.jpg","target":{"type":"application","id":"observatory"},"mode":"area"},
+    {"id":"moons","caption":"Jupiter’s Moons","description":"Ask the companion to frame Jupiter and its four main moons in this view.","image":"./workspace/previews/moons-preview.jpg","target":{"type":"application","id":"observatory"},"mode":"area","setup":{"prompt":"Set up Jupiter’s Moons in the visible, controlled Solar Observatory instance. Read the live simulation state first and preserve the date, playback, speed, range, layout, active view and other views. In the active view show the Sun, Jupiter, Io, Europa, Ganymede and Callisto at true body and orbital scale, with labels and orbits enabled. Focus and follow Jupiter in orbit camera mode using the system camera preset so all four moon orbits fit. Read the full acknowledged state again and confirm the active view focus, visibility and camera settings. Report the acknowledged result without claiming independent visual verification. If ownership or readiness fails, explain it; never reset state, open a second application or replay a timed out operation."}}
+  ]
+}

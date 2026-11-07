@@ -1,4 +1,4 @@
-export interface Body { id: string; name: string; parent: string | null; radius: number; color: string; texture?: string; }
+export interface Body { id: string; name: string; parent: string | null; radius: number; color: string; texture?: string; kind?:'satellite'; }
 export const bodies: Body[] = [
  {id:'sun',name:'Sun',parent:null,radius:695700,color:'#ffd18a',texture:'sun'},
  {id:'mercury',name:'Mercury',parent:'sun',radius:2439.7,color:'#ada79e',texture:'mercury'},
@@ -22,5 +22,8 @@ export const bodies: Body[] = [
  {id:'oberon',name:'Oberon',parent:'uranus',radius:761.4,color:'#aaa39e'},
  {id:'triton',name:'Triton',parent:'neptune',radius:1353.4,color:'#c5bdb7'}
 ];
-export const byId = Object.fromEntries(bodies.map(b => [b.id,b]));
+export type SatelliteId='hubble'|'iss';
+export const satellites:Body[]=[{id:'hubble',name:'Hubble Space Telescope',parent:'earth',radius:0.011,color:'#bad8f5',kind:'satellite'},{id:'iss',name:'International Space Station',parent:'earth',radius:0.066,color:'#e7c38a',kind:'satellite'}];
+export const displayBodies=[...bodies,...satellites];
+export const byId = Object.fromEntries(displayBodies.map(b => [b.id,b]));
 export const AU = 149597870.7;

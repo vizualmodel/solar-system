@@ -1,0 +1,140 @@
+{
+  "sun": {
+    "src": "/images/objects/sun.jpg",
+    "source": "https://science.nasa.gov/sun/",
+    "original": "https://science.nasa.gov/wp-content/uploads/2023/05/pia03149-copy.jpg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "mercury": {
+    "src": "/images/objects/mercury.jpg",
+    "source": "https://science.nasa.gov/mercury/facts/",
+    "original": "https://science.nasa.gov/wp-content/uploads/2017/10/pia15051-mercury.jpg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "venus": {
+    "src": "/images/objects/venus.jpg",
+    "source": "https://science.nasa.gov/venus/facts/",
+    "original": "https://science.nasa.gov/wp-content/uploads/2024/03/venus-mariner-10-pia23791-fig2-16x9-1.jpg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "earth": {
+    "src": "/images/objects/earth.jpg",
+    "source": "https://science.nasa.gov/earth/facts/",
+    "original": "https://images-assets.nasa.gov/image/GSFC_20171208_Archive_e002131/GSFC_20171208_Archive_e002131~large.jpg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "mars": {
+    "src": "/images/objects/mars.jpg",
+    "source": "https://science.nasa.gov/mars/facts/",
+    "original": "https://science.nasa.gov/wp-content/uploads/2017/11/pia17944.jpg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "jupiter": {
+    "src": "/images/objects/jupiter.jpg",
+    "source": "https://science.nasa.gov/jupiter/facts/",
+    "original": "https://science.nasa.gov/wp-content/uploads/2024/03/jupiter-marble-pia22946-16x9-1.jpg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "saturn": {
+    "src": "/images/objects/saturn.jpg",
+    "source": "https://science.nasa.gov/saturn/facts/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/internal_resources/426/rings_diagram_nolables-1.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "uranus": {
+    "src": "/images/objects/uranus.jpg",
+    "source": "https://science.nasa.gov/uranus/facts/",
+    "original": "https://science.nasa.gov/wp-content/uploads/2016/05/uranus-jpg.webp",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "neptune": {
+    "src": "/images/objects/neptune.jpg",
+    "source": "https://science.nasa.gov/neptune/facts/",
+    "original": "https://science.nasa.gov/wp-content/uploads/2024/03/pia01492-neptune-full-disk-16x9-1.jpg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "moon": {
+    "src": "/images/objects/moon.jpg",
+    "source": "https://science.nasa.gov/moon/facts/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/internal_resources/5583/Earthrise-4.jpeg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "phobos": {
+    "src": "/images/objects/phobos.jpg",
+    "source": "https://science.nasa.gov/mars/moons/phobos/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/07/phobosincolor_pia10369.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "deimos": {
+    "src": "/images/objects/deimos.jpg",
+    "source": "https://science.nasa.gov/mars/moons/deimos/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/internal_resources/435/Deimos732X520-1.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "io": {
+    "src": "/images/objects/io.jpg",
+    "source": "https://science.nasa.gov/jupiter/moons/io/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/07/carousel_io_4.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "europa": {
+    "src": "/images/objects/europa.jpg",
+    "source": "https://science.nasa.gov/jupiter/moons/europa/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/e/EuropaStunningSurface1200w.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "ganymede": {
+    "src": "/images/objects/ganymede.jpg",
+    "source": "https://science.nasa.gov/jupiter/moons/ganymede/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/p/i/a/2/PIA24681_Juno_Ganymede_Close-Up.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "callisto": {
+    "src": "/images/objects/callisto.jpg",
+    "source": "https://science.nasa.gov/jupiter/moons/callisto/",
+    "original": "https://images-assets.nasa.gov/image/PIA03456/PIA03456~orig.jpg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "titan": {
+    "src": "/images/objects/titan.jpg",
+    "source": "https://science.nasa.gov/saturn/moons/titan/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/07/49_PIA14909_768.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "enceladus": {
+    "src": "/images/objects/enceladus.jpg",
+    "source": "https://science.nasa.gov/saturn/moons/enceladus/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/internal_resources/394/PIA17184-1.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "titania": {
+    "src": "/images/objects/titania.jpg",
+    "source": "https://science.nasa.gov/uranus/moons/titania/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/07/PIA00036.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "oberon": {
+    "src": "/images/objects/oberon.jpg",
+    "source": "https://science.nasa.gov/uranus/moons/oberon/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/07/Oberon_732.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "triton": {
+    "src": "/images/objects/triton.jpg",
+    "source": "https://science.nasa.gov/neptune/moons/triton/",
+    "original": "https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/07/PIA00317_modest.jpg/jcr:content/renditions/cq5dam.web.1280.1280.jpeg",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "iss": {
+    "src": "/images/objects/iss.png",
+    "source": "https://www.nasa.gov/international-space-station/space-station-facts-and-figures/",
+    "original": "https://www.nasa.gov/wp-content/uploads/2023/05/iss-blowout-updated-view-2023-300.png",
+    "credit": "Image via NASA · full credits at source"
+  },
+  "hubble": {
+    "src": "/images/objects/hubble.jpg",
+    "source": "https://science.nasa.gov/mission/hubble/observatory/design/",
+    "original": "https://science.nasa.gov/wp-content/uploads/2023/04/28045752710_6a9cca2c72_k-jpg.webp",
+    "credit": "Image via NASA · full credits at source"
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "source": "https://www.solarsystemscope.com/textures/",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "credit": "Solar System Scope / INOVE",
+  "maps": {
+    "day": {
+      "url": "https://www.solarsystemscope.com/textures/download/8k_earth_daymap.jpg",
+      "file": "public/textures/earth/day-8k.jpg"
+    },
+    "clouds": {
+      "url": "https://www.solarsystemscope.com/textures/download/8k_earth_clouds.jpg",
+      "file": "public/textures/earth/clouds-4k.jpg"
+    },
+    "night": {
+      "url": "https://www.solarsystemscope.com/textures/download/8k_earth_nightmap.jpg",
+      "file": "public/textures/earth/night-4k.jpg"
+    },
+    "normal": {
+      "url": "https://www.solarsystemscope.com/textures/download/2k_earth_normal_map.tif",
+      "file": "public/textures/earth/normal-2k.png"
+    },
+    "ocean": {
+      "url": "https://www.solarsystemscope.com/textures/download/2k_earth_specular_map.tif",
+      "file": "public/textures/earth/ocean-2k.png"
+    }
+  }
+}
