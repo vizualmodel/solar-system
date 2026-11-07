@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { eccentricAnomaly,orbitalPoint,propagate,relativePosition,positions,distance,julianDate,type Elements,type Ephemeris } from '../src/lib/ephemeris';
 import { bodies,AU } from '../src/lib/catalog';
-import { MIN_TIME,MAX_TIME } from '../src/lib/scenario';
+import { MIN_TIME,MAX_TIME } from '../src/lib/simulation-state';
 const data=JSON.parse(readFileSync(new URL('../public/data/ephemeris.json',import.meta.url),'utf8')) as Ephemeris;
 test('Kepler solver converges for circular and highly eccentric orbits',()=>{for(const e of [0,.0167,.2056,.9,.99])for(const M of [-3,-1,0,.001,1,3]){const E=eccentricAnomaly(M,e);assert.ok(Math.abs(E-e*Math.sin(E)-M)<1e-11);}});
 test('ellipse periapsis, apoapsis, inclination and period are correct',()=>{const row:Elements=[2451545,.2,90,0,0,1,0,2];assert.ok(Math.abs(distance(orbitalPoint(row,0),[0,0,0])-1.6)<1e-12);assert.ok(Math.abs(distance(orbitalPoint(row,Math.PI),[0,0,0])-2.4)<1e-12);assert.ok(Math.abs(orbitalPoint(row,1)[1])<1e-12);assert.ok(distance(propagate(row,2451545),propagate(row,2451905))<1e-12);});

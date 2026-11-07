@@ -1,0 +1,41 @@
+{
+  "name": "@vizualmodel/companion",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": "./src/server.ts",
+    "./browser": "./src/client.ts",
+    "./Panel.svelte": "./src/Panel.svelte",
+    "./ElicitationApproval.svelte": "./src/ElicitationApproval.svelte",
+    "./mcp": "./src/mcp.ts",
+    "./contracts": "./src/contracts.ts",
+    "./doctor": "./src/doctor.ts",
+    "./*": "./src/*.ts",
+    "./browser-session": "./src/browser.ts"
+  },
+  "scripts": {
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "tsx --test tests/*.test.ts",
+    "example:counter": "node --import tsx examples/counter/server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.31.0",
+    "ws": "^8.22.0",
+    "zod": "^4.6.5"
+  },
+  "peerDependencies": {
+    "lucide-svelte": "^0.468.0",
+    "svelte": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/ws": "^8.18.2",
+    "esbuild": "^0.28.2",
+    "lucide-svelte": "^0.468.0",
+    "svelte": "^5.0.0",
+    "svelte-check": "^4.0.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

@@ -1,0 +1,43 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {mkdtemp,readFile,writeFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join,resolve,sep} from 'node:path';
+import {parseScenarioMarkdown,scenarioMarkdown} from '../src/lib/scenario-prompts';
+import {createScenarioRepository} from '../companion/scenario-repository';
+import {defaultSimulationState,STORAGE_KEY} from '../src/lib/simulation-state';
+import {snapshot,assertRestored,restorationReceipt} from '../companion/state';
+test('prompt files have a title and task text, separate from saved simulation state',()=>{
+ const parsed=parseScenarioMarkdown('eclipse',scenarioMarkdown('Spain eclipse','Use two cameras.\nPause playback.'));
+ assert.equal(parsed.title,'Spain eclipse');assert.equal(parsed.prompt,'Use two cameras.\nPause playback.');
+ assert.equal(parseScenarioMarkdown('eclipse','# Eclipse\r\n\r\nShow two views.').prompt,'Show two views.');
+ for(const id of ['../outside','CON','con','x/y','x.md'])assert.throws(()=>parseScenarioMarkdown(id,'# Title\nPrompt'));
+ assert.throws(()=>parseScenarioMarkdown('test','No heading'));
+ assert.throws(()=>scenarioMarkdown('Two\nlines','Prompt'));
+ assert.throws(()=>scenarioMarkdown('Title',' '));
+});
+test('app repository saves Markdown, discovers edits, and protects existing revisions',async t=>{
+ const directory=await mkdtemp(join(tmpdir(),'solar-scenarios-'));
+ t.after(async()=>{if(!resolve(directory).startsWith(resolve(tmpdir())+sep))throw new Error('Unsafe test cleanup path.');await rm(directory,{recursive:true,force:true});});
+ const repo=createScenarioRepository(directory);
+ const saved=await repo.save({title:'Spain eclipse',prompt:'Use two views.'});
+ assert.equal(saved.id,'spain-eclipse');assert.equal(await readFile(join(directory,'spain-eclipse.md'),'utf8'),'# Spain eclipse\n\nUse two views.\n');
+ assert.equal((await repo.list())[0].title,'Spain eclipse');
+ await assert.rejects(repo.save({title:'Spain eclipse',prompt:'Changed'}),/revision/);
+ await assert.rejects(repo.save({id:'../escape',title:'Escape',prompt:'Task'}),/Invalid scenario id/);
+ const updated=await repo.save({id:saved.id,title:saved.title,prompt:'Use three views.',expectedRevision:saved.revision});
+ assert.notEqual(updated.revision,saved.revision);
+ await assert.rejects(repo.save({id:saved.id,title:saved.title,prompt:'Stale',expectedRevision:saved.revision}),/revision/);
+ await writeFile(join(directory,'external.md'),'# External edit\n\nA task.');assert.equal((await repo.list()).length,2);
+ const attempts=await Promise.allSettled([repo.save({id:saved.id,title:saved.title,prompt:'First',expectedRevision:updated.revision}),repo.save({id:saved.id,title:saved.title,prompt:'Second',expectedRevision:updated.revision})]);
+ assert.equal(attempts.filter(r=>r.status==='fulfilled').length,1);
+});
+test('legacy snapshot envelopes and saved JSON migrate without losing simulation fields',()=>{
+ const state=defaultSimulationState('earth');state.time=Date.parse('2026-08-12T18:27:00Z');
+ const legacy={schema:1 as const,scenario:state};const modern=snapshot(legacy);
+ assert.deepEqual(modern,{schema:1,simulationState:state});assert.doesNotThrow(()=>assertRestored(legacy as any,modern));
+ assert.deepEqual(restorationReceipt(legacy,modern),legacy);
+ assert.equal(STORAGE_KEY,'solar-observatory.scenario.v1');
+ assert.throws(()=>snapshot({schema:1,simulationState:state,scenario:{...state,speed:99}}),/Conflicting/);
+ assert.throws(()=>snapshot({schema:99,scenario:state}),/Unsupported/);
+});

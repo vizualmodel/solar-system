@@ -26,13 +26,17 @@ export function bracket(rows:Elements[],jd:number) {
  return [rows[lo],rows[hi]];
 }
 export function propagate(row:Elements,jd:number):Vec3 {return orbitalPoint(row,(row[6]+row[5]*(jd-row[0]))*RAD);}
-export function relativePosition(rows:Elements[],jd:number):Vec3 {
+export function interpolatedOrbit(rows:Elements[],jd:number):(phase:number)=>Vec3 {
  const [a,b]=bracket(rows,jd),f=Math.max(0,Math.min(1,(jd-a[0])/(b[0]-a[0])));
- const p=propagate(a,jd),q=propagate(b,jd);
  // Smoothly join independently propagated osculating states at adjacent source epochs.
  const t=f*f*(3-2*f);
- return p.map((v,i)=>v*(1-t)+q[i]*t) as Vec3;
+ const meanA=(a[6]+a[5]*(jd-a[0]))*RAD,meanB=(b[6]+b[5]*(jd-b[0]))*RAD;
+ return phase=>{
+  const p=orbitalPoint(a,meanA+phase),q=orbitalPoint(b,meanB+phase);
+  return p.map((v,i)=>v*(1-t)+q[i]*t) as Vec3;
+ };
 }
+export function relativePosition(rows:Elements[],jd:number):Vec3 {return interpolatedOrbit(rows,jd)(0);}
 export function positions(data:Ephemeris,ms:number):Record<string,Vec3> {
  const result:Record<string,Vec3>={sun:[0,0,0]},jd=julianDate(ms);
  for(const b of bodies)if(b.parent){const p=relativePosition(data.bodies[b.id],jd),origin=result[b.parent];result[b.id]=p.map((v,i)=>v+origin[i]) as Vec3;}

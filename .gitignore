@@ -5,3 +5,8 @@ dist/
 .env.*
 !.env.example
 *.log
+.companion/
+.codex/
+
+# Local workspace validation records
+workspace/validation/
