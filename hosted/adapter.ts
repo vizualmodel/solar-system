@@ -37,7 +37,7 @@ function observation(ports: AdapterPorts) {
   };
 }
 
-// Domain dispatch is independent of WSS/OAuth. The future relay must independently
+// Domain dispatch is independent of WSS/OAuth. The relay independently
 // enforce owner, consent, scopes, version and generation before calling this boundary.
 export function createHostedAdapter(ports: AdapterPorts) {
   const completed = new Map<string, { fingerprint: string; result: Promise<unknown> }>();
@@ -74,12 +74,12 @@ export function createHostedAdapter(ports: AdapterPorts) {
       const before = ports.read(), s = validateSimulationState(before.state);
       if (request.action === 'read_state') { fields(p, []); output = observation(ports); }
       if (mutates) {
-        if (!Number.isSafeInteger(p.expectedRevision) || p.expectedRevision !== before.revision) throw Error('State changed; read state before deliberately issuing a new action.');
+        if (p.expectedRevision !== undefined && (!Number.isSafeInteger(p.expectedRevision) || p.expectedRevision !== before.revision)) throw Error('State changed; read state before deliberately issuing a new action.');
         if (s.mission) throw Error('Stop the mission before using normal simulation controls.');
         if (Date.now() >= request.deadline || !target.operate) throw Error('Permission revoked or deadline expired.');
         if (request.action === 'set_time') {
           fields(p, ['time', 'expectedRevision']); utc(p.time);
-          effectiveInputs = { time: p.time, expectedRevision: p.expectedRevision };
+          effectiveInputs = { time: p.time, stateRevisionBefore: before.revision, ...(p.expectedRevision === undefined ? {} : { expectedRevision: p.expectedRevision }) };
           await ports.apply('set_simulation_time', { time: p.time }, { id: request.id, expiresAt: request.deadline });
         } else {
           fields(p, ['viewId', 'labels', 'orbits', 'expectedRevision']);
@@ -89,7 +89,7 @@ export function createHostedAdapter(ports: AdapterPorts) {
             if (typeof p[key] !== 'boolean') throw Error('View options must be booleans.'); settings[key] = p[key];
           }
           if (!Object.keys(settings).length) throw Error('Supply labels or orbits.');
-          effectiveInputs = { viewId: p.viewId, ...settings, expectedRevision: p.expectedRevision };
+          effectiveInputs = { viewId: p.viewId, ...settings, stateRevisionBefore: before.revision, ...(p.expectedRevision === undefined ? {} : { expectedRevision: p.expectedRevision }) };
           await ports.apply('scene', { viewId: p.viewId, settings }, { id: request.id, expiresAt: request.deadline });
         }
         output = observation(ports);

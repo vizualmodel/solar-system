@@ -5,10 +5,9 @@ import { applyBrowserRequest } from '../companion/browser-adapter';
 import { createHostedAdapter } from './adapter';
 import type { ClosestApproach } from '../src/lib/closest-approach';
 
-// Not imported by the application until the authenticated deployed transport slice
-// passes. No global hooks, automatic connection, login or agent consent is added.
+// Constructed only after explicit tab approval. Uses the existing model dispatcher.
 export function createBrowserActionAdapter(modelBuild: string, dataVersion: string) {
-  let revision = 0, worker: Worker | undefined, pending = false;
+  let revision = 0, worker: Worker | undefined, pending = false, cancel: (() => void) | undefined;
   const unsubscribe = simulationState.subscribe(() => revision++);
   const adapter = createHostedAdapter({ modelBuild, dataVersion,
     read: () => ({ state: get(simulationState), revision }),
@@ -24,13 +23,14 @@ export function createBrowserActionAdapter(modelBuild: string, dataVersion: stri
         const id = crypto.randomUUID();
         worker ??= new Worker(new URL('./investigation.worker.ts', import.meta.url), { type: 'module' });
         const active = worker;
-        const finish = () => { pending = false; clearTimeout(timeout); active.onmessage = null; active.onerror = null; };
+        const finish = () => { pending = false; cancel = undefined; clearTimeout(timeout); active.onmessage = null; active.onerror = null; };
         const timeout = setTimeout(() => { finish(); active.terminate(); worker = undefined; reject(Error('Investigation deadline expired; worker stopped.')); }, Math.max(1, deadline - Date.now()));
         active.onmessage = event => { if (event.data.id !== id) return; finish(); event.data.error ? reject(Error(event.data.error)) : resolve(event.data.result); };
         active.onerror = () => { finish(); active.terminate(); worker = undefined; reject(Error('Investigation worker unavailable.')); };
+        cancel = () => { finish(); reject(Error('Agent access disconnected; investigation cancelled.')); };
         active.postMessage({ id, after, until, deadline });
       });
     },
   });
-  return { ...adapter, dispose() { unsubscribe(); worker?.terminate(); worker = undefined; } };
+  return { ...adapter, dispose() { unsubscribe(); cancel?.(); worker?.terminate(); worker = undefined; } };
 }

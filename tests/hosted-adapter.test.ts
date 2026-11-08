@@ -43,6 +43,16 @@ test('wrong tab/generation, expiry, read-only consent, unknown fields and manual
   await assert.rejects(f.adapter.execute(p, f.target), /State changed/);
   assert.equal(f.applies, 0);
 });
+
+test('absolute setter without a revision uses latest state and preserves unrelated manual settings', async () => {
+  const f = fixture(); f.manual();
+  const before = structuredClone(f.state);
+  const response = await f.adapter.execute(f.request('set_time', { time: '2026-01-01T00:00:00Z' }), f.target) as any;
+  assert.equal(f.state.time, Date.parse('2026-01-01T00:00:00Z'));
+  assert.deepEqual(f.state.views, before.views); assert.equal(f.state.playing, before.playing);
+  assert.equal(response.effectiveInputs.stateRevisionBefore, 2);
+  assert.equal(response.result.revision, 3);
+});
 test('Earth–Mars adapter agrees exactly with the existing calculation and does not change state', async () => {
   const f = fixture(), before = structuredClone(f.state);
   const after = '2026-01-01T00:00:00Z', until = new Date(MAX_TIME).toISOString();
