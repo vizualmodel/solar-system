@@ -4,27 +4,29 @@
   import { createBridgeClient } from '../model-integration/bridge-client';
   let { onclose }: { onclose: () => void } = $props();
   let client: ReturnType<typeof createBridgeClient>;
-  let connected=$state(false),control=$state(false),operate=$state(false),status=$state('disconnected'),notice=$state('Connect this model to the installed VizualModel Bridge.'),text=$state(''),runtime=$state(''),model=$state('');
+  let connected=$state(false),control=$state(false),operate=$state(false),status=$state('disconnected'),notice=$state('Connect this model to the installed VizualModel Bridge.'),text=$state(''),runtime=$state(''),model=$state(''),effort=$state(''),started=$state(0),elapsed=$state(0);
   let messages=$state<{id:string;role:'user'|'assistant';text:string}[]>([]);
   let tools=$state<{id:string;name:string;status:string;message?:string}[]>([]);
   const busy=$derived(['working','connecting-runtime','waiting-for-approval','stopping'].includes(status));
+  $effect(()=>{if(busy){started=Date.now();elapsed=0;}else{started=0;elapsed=0;}});
   const labels:Record<string,string>={disconnected:'Disconnected',connecting:'Opening Bridge',ready:'Ready',working:'Working', 'connecting-runtime':'Connecting Codex','waiting-for-approval':'Waiting for approval',interrupted:'Stopped',stopped:'Stopped',stopping:'Stopping',error:'Error',failed:'Failed'};
   function event(value:any){
     if(value.type==='connection'){connected=value.connected;operate=!!value.operate;if(!connected){status='disconnected';runtime='';model='';}}
     if(value.type==='status'){status=value.status;notice=value.message??'';}
-    if(value.type==='runtime'){runtime=value.name;model=value.model;}
+    if(value.type==='runtime'){runtime=value.name;model=value.model;effort=value.effort??'';}
     if(value.type==='text_delta'){const found=messages.find(m=>m.id===value.id);messages=found?messages.map(m=>m.id===value.id?{...m,text:m.text+value.text}:m):[...messages,{id:value.id,role:'assistant',text:value.text}];}
     if(value.type==='message')messages=messages.some(m=>m.id===value.id)?messages.map(m=>m.id===value.id?{...m,text:value.text}:m):[...messages,{id:value.id,role:'assistant',text:value.text}];
     if(value.type==='tool_activity')tools=tools.some(t=>t.id===value.id)?tools.map(t=>t.id===value.id?value:t):[...tools.slice(-19),value];
   }
   function action(run:()=>void){try{run();}catch(error){status='error';notice=(error as Error).message;}}
   function send(e:SubmitEvent){e.preventDefault();const message=text.trim();if(!message||busy||!connected)return;action(()=>{client.send(message);messages=[...messages,{id:crypto.randomUUID(),role:'user',text:message}];text='';status='working';notice='';});}
-  onMount(()=>{client=createBridgeClient(event);const close=()=>client.dispose();window.addEventListener('pagehide',close);return()=>{window.removeEventListener('pagehide',close);client.dispose();};});
+  onMount(()=>{client=createBridgeClient(event);const timer=setInterval(()=>{if(started)elapsed=Math.floor((Date.now()-started)/1000);},1000);const close=()=>client.dispose();window.addEventListener('pagehide',close);return()=>{clearInterval(timer);window.removeEventListener('pagehide',close);client.dispose();};});
 </script>
 <aside aria-label="Agent" class="agent-access">
   <header><div><small>THIS MODEL</small><h2>Agent</h2></div><button aria-label="Close Agent panel" onclick={onclose}><X size={18}/></button></header>
   <p class="status" role="status" aria-live="polite">{labels[status]??status}{connected?` · ${operate?'Model control':'Read only'}`:''}</p>
-  {#if runtime}<p class="hint">{runtime}{model?` · ${model}`:''}</p>{/if}
+  {#if runtime}<p class="hint">{runtime}{model?` · ${model}`:''}{effort?` · ${effort} effort`:''}</p>{/if}
+  {#if busy}<p class="hint">{elapsed}s elapsed. {status==='waiting-for-approval'?'Review the request in Bridge.':status==='connecting-runtime'?'Starting your model’s Codex conversation.':'Waiting for Codex. Any action approval appears in Bridge when Codex requests it.'}</p>{/if}
   {#if notice}<p class="hint">{notice}</p>{/if}
   {#if !connected}
     <label class="permission"><input type="checkbox" bind:checked={control} disabled={status==='connecting'||status==='waiting-for-approval'}/> Request control of time, labels and orbits</label>
