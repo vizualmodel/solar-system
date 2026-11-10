@@ -64,7 +64,7 @@ The search uses the same approximate orbital model as the simulation, scans dist
 
 `src/lib/ephemeris.ts` is the pure physical model (AU, days, J2000 ecliptic). `catalog.ts` describes bodies. `simulation-state.ts` owns serializable configuration and validation; `scenario.ts` retains compatibility exports. `store.ts` manages the shared clock, persistence, layouts and the command boundary. `renderer.ts` owns each view's Three.js resources, floating origin, presentation scaling and camera controls. Svelte components own the UI. The rendering layer never feeds magnified positions back into physics.
 
-`Command` / `command()` and the browser adapter expose validated operations through eleven application MCP tools plus four development tools. A ready browser and local Node service are required. See [MCP controls](docs/mcp-controls.md). Solar config sets `agent: false`; legacy Codex modules are preserved but no application-owned LLM starts. ChatGPT connection and hosted model sessions are not implemented.
+`Command` / `command()` and the browser adapter expose validated operations through eleven application MCP tools plus four development tools. A ready browser and local Node service are required. See [MCP controls](docs/mcp-controls.md). Solar config sets `agent: false`; legacy Codex modules are preserved but no application-owned LLM starts. The Agent panel reports that VizualModel Bridge is not available yet. Manual operation requires no agent. Transport-independent model actions live in `src/model-integration`; the retired cloud relay is absent.
 
 ## Data and accuracy
 

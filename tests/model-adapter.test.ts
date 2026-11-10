@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { createHostedAdapter, type HostedRequest } from '../hosted/adapter';
+import { createModelAdapter, type ModelRequest } from '../src/model-integration/adapter';
 import { defaultSimulationState, MAX_TIME } from '../src/lib/simulation-state';
 import { nextClosestApproach } from '../src/lib/closest-approach';
 import type { Ephemeris } from '../src/lib/ephemeris';
@@ -15,13 +15,13 @@ const { applyControl } = await import('../companion/controls');
 const data = JSON.parse(readFileSync(new URL('../public/data/ephemeris.json', import.meta.url), 'utf8')) as Ephemeris;
 function fixture() {
   let state = defaultSimulationState(), revision = 1, applies = 0;
-  const adapter = createHostedAdapter({ modelBuild: 'test-build', dataVersion: 'test-data', read: () => ({ state, revision }),
+  const adapter = createModelAdapter({ modelBuild: 'test-build', dataVersion: 'test-data', read: () => ({ state, revision }),
     async apply(method, params) { state = applyControl(state, method, params); revision++; applies++; },
     async investigate(after, until) { return nextClosestApproach(data, 'earth', 'mars', after, until); },
   });
   const target = { sessionId: 'test-tab', generation: 1, read: true, operate: true };
   let sequence = 0;
-  const request = (action: HostedRequest['action'], inputs = {}): HostedRequest => ({ protocol: 1, id: 'request-' + ++sequence, sessionId: target.sessionId, generation: 1, deadline: Date.now() + 30000, action, inputs });
+  const request = (action: ModelRequest['action'], inputs = {}): ModelRequest => ({ protocol: 1, id: 'request-' + ++sequence, sessionId: target.sessionId, generation: 1, deadline: Date.now() + 30000, action, inputs });
   return { adapter, target, request, get state() { return state; }, get applies() { return applies; }, manual() { revision++; } };
 }
 test('absolute controls use existing dispatcher, preserve playback and deduplicate a request', async () => {

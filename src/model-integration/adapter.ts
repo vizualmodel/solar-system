@@ -1,12 +1,12 @@
-import { validateSimulationState, MIN_TIME, MAX_TIME, type SimulationState } from '../src/lib/simulation-state';
-import type { ClosestApproach } from '../src/lib/closest-approach';
+import { validateSimulationState, MIN_TIME, MAX_TIME, type SimulationState } from '../lib/simulation-state';
+import type { ClosestApproach } from '../lib/closest-approach';
 
-export const HOSTED_PROTOCOL = 1;
-export const HOSTED_ACTIONS = ['read_state', 'set_time', 'set_view_options', 'investigate_earth_mars'] as const;
-export type HostedAction = typeof HOSTED_ACTIONS[number];
-export type HostedRequest = {
+export const MODEL_PROTOCOL = 1;
+export const MODEL_ACTIONS = ['read_state', 'set_time', 'set_view_options', 'investigate_earth_mars'] as const;
+export type ModelAction = typeof MODEL_ACTIONS[number];
+export type ModelRequest = {
   protocol: 1; id: string; sessionId: string; generation: number; deadline: number;
-  action: HostedAction; inputs: Record<string, unknown>;
+  action: ModelAction; inputs: Record<string, unknown>;
 };
 export interface AdapterPorts {
   read(): { state: SimulationState; revision: number };
@@ -37,14 +37,14 @@ function observation(ports: AdapterPorts) {
   };
 }
 
-// Domain dispatch is independent of WSS/OAuth. The relay independently
-// enforce owner, consent, scopes, version and generation before calling this boundary.
-export function createHostedAdapter(ports: AdapterPorts) {
+// Domain dispatch is transport independent. Callers must authenticate and bind
+// the live model session and enforce its current permissions before dispatch.
+export function createModelAdapter(ports: AdapterPorts) {
   const completed = new Map<string, { fingerprint: string; result: Promise<unknown> }>();
   let mutationInFlight = false;
-  function execute(request: HostedRequest, target: { sessionId: string; generation: number; read: boolean; operate: boolean }) {
+  function execute(request: ModelRequest, target: { sessionId: string; generation: number; read: boolean; operate: boolean }) {
     object(request); fields(request, ['protocol', 'id', 'sessionId', 'generation', 'deadline', 'action', 'inputs']);
-    if (request.protocol !== HOSTED_PROTOCOL || !HOSTED_ACTIONS.includes(request.action)) throw Error('Incompatible protocol or unsupported operation.');
+    if (request.protocol !== MODEL_PROTOCOL || !MODEL_ACTIONS.includes(request.action)) throw Error('Incompatible protocol or unsupported operation.');
     if (typeof request.id !== 'string' || !/^[a-zA-Z0-9-]{1,100}$/.test(request.id)) throw Error('Invalid request ID.');
     if (!Number.isInteger(request.generation) || request.generation < 1 || request.sessionId !== target.sessionId || request.generation !== target.generation) throw Error('Wrong session or stale generation.');
     if (!Number.isFinite(request.deadline) || request.deadline <= Date.now() || request.deadline > Date.now() + 60_000) throw Error('Expired or invalid deadline; no action applied.');
@@ -62,7 +62,7 @@ export function createHostedAdapter(ports: AdapterPorts) {
     if (completed.size > 100) completed.delete(completed.keys().next().value!);
     return result;
   }
-  async function run(request: HostedRequest, target: { read: boolean; operate: boolean }) {
+  async function run(request: ModelRequest, target: { read: boolean; operate: boolean }) {
     const p = request.inputs;
     let effectiveInputs: Record<string, unknown> = {}, output: unknown;
     const mutates = request.action === 'set_time' || request.action === 'set_view_options';
@@ -106,10 +106,10 @@ export function createHostedAdapter(ports: AdapterPorts) {
           assumptions: 'Existing approximate Keplerian ephemeris. Next future local minimum, not the absolute minimum. Six-hour brackets, one-second time refinement. Agreement with direct invocation does not validate astronomical accuracy.',
           stateUnchanged: true, stateRevisionAtCompletion: ports.read().revision };
       }
-      return { requestId: request.id, sessionId: request.sessionId, generation: request.generation, protocol: HOSTED_PROTOCOL,
+      return { requestId: request.id, sessionId: request.sessionId, generation: request.generation, protocol: MODEL_PROTOCOL,
         operation: request.action, modelBuild: ports.modelBuild, dataVersion: ports.dataVersion, effectiveInputs,
         timestamp: new Date().toISOString(), outcome: 'succeeded', result: output };
     } finally { if (mutates) mutationInFlight = false; }
   }
-  return { describe: () => ({ protocol: HOSTED_PROTOCOL, actions: [...HOSTED_ACTIONS], modelBuild: ports.modelBuild, dataVersion: ports.dataVersion }), execute };
+  return { describe: () => ({ protocol: MODEL_PROTOCOL, actions: [...MODEL_ACTIONS], modelBuild: ports.modelBuild, dataVersion: ports.dataVersion }), execute };
 }

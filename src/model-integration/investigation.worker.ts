@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
-import { nextClosestApproach } from '../src/lib/closest-approach';
-import type { Ephemeris } from '../src/lib/ephemeris';
+import { nextClosestApproach } from '../lib/closest-approach';
+import type { Ephemeris } from '../lib/ephemeris';
 let data: Promise<Ephemeris> | undefined;
 self.onmessage = async (event: MessageEvent<{ id: string; after: number; until: number; deadline: number }>) => {
   const { id, after, until, deadline } = event.data;

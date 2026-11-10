@@ -1,15 +1,15 @@
 import { get } from 'svelte/store';
 import { tick } from 'svelte';
-import { simulationState } from '../src/lib/store';
-import { applyBrowserRequest } from '../companion/browser-adapter';
-import { createHostedAdapter } from './adapter';
-import type { ClosestApproach } from '../src/lib/closest-approach';
+import { simulationState } from '../lib/store';
+import { applyBrowserRequest } from '../../companion/browser-adapter';
+import { createModelAdapter } from './adapter';
+import type { ClosestApproach } from '../lib/closest-approach';
 
 // Constructed only after explicit tab approval. Uses the existing model dispatcher.
 export function createBrowserActionAdapter(modelBuild: string, dataVersion: string) {
   let revision = 0, worker: Worker | undefined, pending = false, cancel: (() => void) | undefined;
   const unsubscribe = simulationState.subscribe(() => revision++);
-  const adapter = createHostedAdapter({ modelBuild, dataVersion,
+  const adapter = createModelAdapter({ modelBuild, dataVersion,
     read: () => ({ state: get(simulationState), revision }),
     async apply(method, params, request) {
       window.dispatchEvent(new Event('solar:save-cameras'));
