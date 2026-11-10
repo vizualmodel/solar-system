@@ -8,6 +8,14 @@ The owner confirmed Chrome cold launch from a stopped Bridge, real hosted conver
 
 No new raw numerical reply was pasted, so the exact local-folder numerical result below is not relabeled as the HTTPS result. Denied action, Stop, reconnect and two concurrent real tabs are tracked separately in the [0.2.3 acceptance record](https://github.com/vizualmodel/bridge/blob/bridge/connection-proof/docs/acceptance-0.2.3.md).
 
+## Reconnect and feedback follow-up
+
+The owner confirmed two-tab isolation, including rejection of B's read-only mutation. An initial attempt displayed only “Error · Read only”; a later retest gave a genuine Codex reply explaining that labels were hidden and the connected tools could only read. The first error was not reproduced in a separate real-Codex fixture; that test also returned a normal read-only explanation without executing a control. The UI now adds a clearly labeled Bridge explanation in the conversation when a request ends in an error, preserving genuine Codex replies and avoiding duplicate failure notices. One actual read is also shown once rather than counting both its runtime wrapper and browser action.
+
+The owner reported that disconnect succeeded, while reconnect required a second attempt. A real-socket fixture reproduced a timing failure in the original shipped client: an already-running listener rejected the hello before the OS launch activation arrived. The revised client retries only that unauthenticated hello within the original pairing deadline. Failed identity proofs, denied consent, chat and model actions are never automatically retried. This matches the reported symptoms but does not establish the exact cause of the owner's first attempt.
+
+The browser now starts the Codex conversation immediately after native model consent, using Bridge 0.2.3's existing New conversation capability, and waits for conversation acknowledgement before showing Ready. Reconnection explicitly starts a new conversation without replaying actions. The changes require only updated model assets; the accepted installer remains unchanged. Updated graphical feedback/reconnect acceptance is still required. Denied-action and Stop outcomes have not yet been individually confirmed.
+
 ## Earlier local-folder acceptance on Bridge 0.2.1
 
 The owner tested real Codex conversation and model control in Solar's Agent panel using the installed Bridge 0.2.1 and its selected-folder server. This is owner-observed real browser evidence, not a synthetic runtime fixture.
