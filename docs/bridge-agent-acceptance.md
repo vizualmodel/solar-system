@@ -1,5 +1,15 @@
 # Local Bridge Agent acceptance — 10 November 2026
 
+## Actual HTTPS follow-up on Bridge 0.2.3
+
+The same Solar implementation was subsequently built cleanly from source `dd8b24aa1210bc8016135d7a87f984592abc566b` and deployed, with separate owner approval, as an isolated authenticated HTTPS acceptance preview. Production was not deployed. All 89 deployed source assets match the prepared hashes.
+
+The owner confirmed Chrome cold launch from a stopped Bridge, real hosted conversation, labels inversion/readback and Earth–Mars investigation on installed 0.2.3: “Everything worked ok - latency was reasonable.” The approximate four or five approvals were accepted by the owner; no exact duration or approval count was measured. The agent independently observed the exact HTTPS origin with model-control permission in the native 0.2.3 window.
+
+No new raw numerical reply was pasted, so the exact local-folder numerical result below is not relabeled as the HTTPS result. Denied action, Stop, reconnect and two concurrent real tabs are tracked separately in the [0.2.3 acceptance record](https://github.com/vizualmodel/bridge/blob/bridge/connection-proof/docs/acceptance-0.2.3.md).
+
+## Earlier local-folder acceptance on Bridge 0.2.1
+
 The owner tested real Codex conversation and model control in Solar's Agent panel using the installed Bridge 0.2.1 and its selected-folder server. This is owner-observed real browser evidence, not a synthetic runtime fixture.
 
 The labels request passed after genuine Codex action approval. The owner reported an immediate Bridge connection prompt followed by a long wait for Codex's action prompt. No exact latency or independent full before/after state snapshot was captured.
