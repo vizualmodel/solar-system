@@ -10,7 +10,8 @@ if (!/^[a-f0-9]{40}$/.test(sourceCommit)) throw Error('A full source commit is r
 const dataVersion = createHash('sha256').update(readFileSync(new URL('./public/data/ephemeris.json', import.meta.url))).digest('hex');
 const modelBuild = 'solar-1-' + sourceCommit.slice(0, 12);
 export default defineConfig({
-  plugins: [svelte(), { name: 'model-build-provenance', generateBundle() { this.emitFile({ type: 'asset', fileName: 'build-info.json', source: JSON.stringify({ modelBuild, sourceCommit, dataVersion, protocol: 1, agentAccess: false }) }); } }],
+  define: { __MODEL_BUILD__: JSON.stringify(modelBuild), __MODEL_DATA__: JSON.stringify(dataVersion) },
+  plugins: [svelte(), { name: 'model-build-provenance', generateBundle() { this.emitFile({ type: 'asset', fileName: 'build-info.json', source: JSON.stringify({ modelBuild, sourceCommit, dataVersion, protocol: 1, agentAccess: 'local-bridge-development' }) }); this.emitFile({type:'asset',fileName:'vizualmodel-package.json',source:JSON.stringify({version:1,id:'vizualmodel/solar-system',label:'Solar System',entry:'index.html',modelBuild,sourceCommit,dataVersion})}); } }],
   resolve: { dedupe: ['svelte'] },
   build: { rollupOptions: { output: { manualChunks: { three: ['three', 'three/addons/controls/OrbitControls.js'] } } } },
 });
