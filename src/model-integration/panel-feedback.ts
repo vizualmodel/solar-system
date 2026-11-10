@@ -7,8 +7,8 @@ export function failureFeedback(message:unknown,permission:'read'|'control'|'dis
   return `${detail}\n\nCheck Bridge and the browser’s application-launch and local-access prompts, then connect again. Previous actions will not be sent again.`;
 }
 
-export function conversationFeedback(operate:boolean){
-  return `Codex is connected. This is a new conversation for this model; previously completed changes remain.\n\n${operate?'Model control is allowed. Any action approval requested by Codex appears in Bridge.':'This connection is read only. Ask about the current state or run an investigation. To change time, labels or orbits, disconnect and reconnect with model control.'}`;
+export function conversationFeedback(operate:boolean,resumed=false){
+  return `Codex is connected. ${resumed?'This conversation resumed with current permissions and fresh model tools. Model state was not restored.':'This is a new conversation for this model; previously completed changes remain.'}\n\n${operate?'Model control is allowed. Any action approval requested by Codex appears in Bridge.':'This connection is read only. Ask about the current state or run an investigation. To change time, labels or orbits, disconnect and reconnect with model control.'}`;
 }
 
 export function bridgeNotice(messages:ConversationMessage[],id:string,text:string):ConversationMessage[]{

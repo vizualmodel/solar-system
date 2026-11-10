@@ -9,21 +9,27 @@
   let messages=$state<ConversationMessage[]>([]);
   let issueId:string|undefined;
   let tools=$state<{id:string;name:string;status:string;message?:string}[]>([]);
+  let durable=$state(false),historyAccess=$state(false),query=$state(''),conversationId=$state(''),archive=$state<any>(null),conversations=$state<any[]>([]),title=$state(''),contextIds=$state<string[]>([]),contextChanged=$state(false);
+  function download(value:any){const blob=new Blob([value.text],{type:value.format==='json'?'application/json':'text/markdown'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='conversation.'+(value.format==='json'?'json':'md');link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   const busy=$derived(['working','connecting-runtime','waiting-for-approval','stopping'].includes(status));
   $effect(()=>{if(busy){started=Date.now();elapsed=0;}else{started=0;elapsed=0;}});
-  const labels:Record<string,string>={disconnected:'Disconnected',connecting:'Opening Bridge',ready:'Ready',working:'Working', 'connecting-runtime':'Connecting Codex','waiting-for-approval':'Waiting for approval',interrupted:'Stopped',stopped:'Stopped',stopping:'Stopping',error:'Error',failed:'Failed'};
+  const labels:Record<string,string>={archive:'History · choose a conversation',disconnected:'Disconnected',connecting:'Opening Bridge',ready:'Ready',working:'Working', 'connecting-runtime':'Connecting Codex','waiting-for-approval':'Waiting for approval',interrupted:'Stopped',stopped:'Stopped',stopping:'Stopping',error:'Error',failed:'Failed'};
   function showFailure(message:unknown){issueId??=crypto.randomUUID();messages=bridgeNotice(messages,issueId,failureFeedback(message,connected?operate?'control':'read':'disconnected'));}
   function event(value:any){
-    if(value.type==='connection'){connected=value.connected;operate=!!value.operate;if(connected){messages=[];tools=[];issueId=undefined;}else{status='disconnected';runtime='';model='';}}
+    if(value.type==='connection'){connected=value.connected;operate=!!value.operate;if(connected){durable=!!value.durable;historyAccess=!!value.historyAccess;messages=[];tools=[];issueId=undefined;conversationId='';archive=null;conversations=[];}else{status='disconnected';runtime='';model='';}}
     if(value.type==='status'){status=value.status;notice=value.message??'';if(['error','failed'].includes(status))showFailure(value.message);if(status==='disconnected'&&messages.length)messages=bridgeNotice(messages,crypto.randomUUID(),notice||'Disconnected. Connect again to start a new conversation.');}
-    if(value.type==='conversation'){issueId=undefined;messages=bridgeNotice(messages,crypto.randomUUID(),conversationFeedback(operate));tools=[];}
+    if(value.type==='history_list')conversations=value.conversations;
+    if(value.type==='history_read'){archive=value.conversation;conversationId=archive.id;title=archive.title;contextChanged=value.contextChanged;contextIds=[];messages=archive.events.filter((e:any)=>['user','assistant','context'].includes(e.kind)).map((e:any)=>({id:e.id,role:e.kind==='context'?'bridge':e.kind,text:e.text+(e.status==='interrupted'?'\n[Interrupted]':'')}));status='archive';notice='Archive only. Resume explicitly to start Codex with this model’s current permissions.';tools=[];}
+    if(value.type==='history_export')download(value);
+    if(value.type==='history_deleted'){if(value.conversationId===conversationId){archive=null;conversationId='';messages=[];}notice=value.message;client.history(query);}
+    if(value.type==='conversation'){issueId=undefined;conversationId=value.conversationId??'';archive=null;if(durable&&Array.isArray(value.history))messages=value.history.filter((e:any)=>['user','assistant','context'].includes(e.kind)).map((e:any)=>({id:e.id,role:e.kind==='context'?'bridge':e.kind,text:e.text+(e.status==='interrupted'?'\n[Interrupted]':'')}));messages=bridgeNotice(messages,crypto.randomUUID(),conversationFeedback(operate,!!value.resumed));tools=[];if(historyAccess)client.history(query);}
     if(value.type==='runtime'){runtime=value.name;model=value.model;effort=value.effort??'';}
     if(value.type==='text_delta'){const found=messages.find(m=>m.id===value.id);messages=found?messages.map(m=>m.id===value.id?{...m,text:m.text+value.text}:m):[...messages,{id:value.id,role:'assistant',text:value.text}];}
     if(value.type==='message')messages=messages.some(m=>m.id===value.id)?messages.map(m=>m.id===value.id?{...m,text:value.text}:m):[...messages,{id:value.id,role:'assistant',text:value.text}];
     if(value.type==='tool_activity')tools=tools.some(t=>t.id===value.id)?tools.map(t=>t.id===value.id?value:t):[...tools.slice(-19),value];
   }
   function action(run:()=>void){issueId=undefined;try{run();}catch(error){status='error';notice=(error as Error).message;showFailure(notice);}}
-  function send(e:SubmitEvent){e.preventDefault();const message=text.trim();if(!message||busy||!connected)return;action(()=>{client.send(message);messages=[...messages,{id:crypto.randomUUID(),role:'user',text:message}];text='';status='working';notice='';});}
+  function send(e:SubmitEvent){e.preventDefault();const message=text.trim();if(!message||busy||!connected||status==='archive')return;action(()=>{const id=client.send(message);messages=[...messages,{id:'user:'+id,role:'user',text:message}];text='';status='working';notice='';});}
   onMount(()=>{client=createBridgeClient(event);const timer=setInterval(()=>{if(started)elapsed=Math.floor((Date.now()-started)/1000);},1000);const close=()=>client.dispose();window.addEventListener('pagehide',close);return()=>{clearInterval(timer);window.removeEventListener('pagehide',close);client.dispose();};});
 </script>
 <aside aria-label="Agent" class="agent-access">
@@ -39,16 +45,34 @@
   {:else}
     <div class="actions"><button disabled={busy} onclick={()=>action(()=>{client.newConversation();messages=[];tools=[];status='connecting-runtime';})}>New conversation</button><button onclick={()=>action(()=>client.disconnect())}>Disconnect</button></div>
   {/if}
+  {#if connected&&durable}
+    <details open><summary>Conversations</summary>
+      {#if historyAccess}
+        <label for="conversation-search">Search titles and transcripts</label><input id="conversation-search" type="search" bind:value={query} maxlength="200"/><button onclick={()=>action(()=>client.history(query))}>Search / refresh</button>
+        <ul>{#each conversations as c (c.id)}<li><button disabled={busy} onclick={()=>action(()=>client.read(c.id))}>{c.title} · {new Date(c.updated).toLocaleString()}{c.writer?' · Active writer':''}</button></li>{/each}</ul>
+        {#if conversationId}<div class="actions"><button onclick={()=>action(()=>client.export(conversationId,'markdown'))}>Export Markdown</button><button onclick={()=>action(()=>client.export(conversationId,'json'))}>Export JSON</button></div>{/if}
+        {#if archive}
+          <label for="conversation-title">Title</label><input id="conversation-title" bind:value={title} maxlength="150"/><button onclick={()=>action(()=>client.rename(archive.id,title))}>Rename</button>
+          <p class="hint">Saved build: {archive.build}{contextChanged?' · Current model build has changed.':''} Model state and past permissions are not restored.</p>
+          <button disabled={busy||archive.writer||!archive.hasNative} onclick={()=>action(()=>client.resume(archive.id))}>Resume with this model</button>
+          <details><summary>Start new with selected prior context</summary><p>Creates a new native conversation. Selected text is context; prior actions are not replayed.</p>{#each archive.events.filter((e:any)=>['user','assistant'].includes(e.kind)) as e (e.id)}<label class="permission"><input type="checkbox" bind:group={contextIds} value={e.id}/>{e.kind}: {e.text.slice(0,100)}</label>{/each}<button disabled={busy||!contextIds.length} onclick={()=>action(()=>client.newConversation(archive.id,contextIds))}>Start new with selected text</button></details>
+          <details><summary>Linked development tasks · {archive.tasks.length}</summary>{#each archive.tasks as task (task.id)}<pre>{JSON.stringify(task,null,2)}</pre>{/each}</details>
+          <button disabled={busy||archive.writer} onclick={()=>action(()=>client.delete(archive.id))}>Delete Bridge archive…</button>
+        {/if}
+      {:else}<p>History stays available in the trusted Bridge window. Reconnect and approve history access to read it here.</p>{/if}
+    </details>
+  {/if}
   <div class="messages" aria-label="Conversation" aria-live="polite" aria-relevant="additions text">
     {#if !messages.length}<p class="hint">Ask about the current model, change a supported setting or investigate Earth and Mars.</p>{/if}
     {#each messages as message (message.id)}<article class:user={message.role==='user'} class:bridge={message.role==='bridge'}><small>{message.role==='user'?'YOU':message.role==='bridge'?'BRIDGE':'CODEX'}</small><p>{message.text}</p></article>{/each}
   </div>
   {#if tools.length}<details><summary>Model activity · {tools.length}</summary>{#each tools as tool (tool.id)}<p class="activity">{tool.name} · {tool.status}{tool.message?` · ${tool.message}`:''}</p>{/each}</details>{/if}
-  <form onsubmit={send}><label for="model-agent-message">Message this model’s agent</label><textarea id="model-agent-message" bind:value={text} maxlength="16000" rows="3" disabled={!connected||status==='connecting-runtime'} placeholder={operate?'Read the current state, then turn labels off in the active view.':'Read the current state or investigate Earth and Mars.'}></textarea><div class="actions"><button class="primary" disabled={!connected||busy||!text.trim()} type="submit">Send</button><button type="button" disabled={!connected||!busy||status==='connecting-runtime'} onclick={()=>action(()=>{client.cancel();status='stopping';notice='Stopping Codex does not undo changes already applied.';})}>Stop</button></div></form>
+  <form onsubmit={send}><label for="model-agent-message">Message this model’s agent</label><textarea id="model-agent-message" bind:value={text} maxlength="16000" rows="3" disabled={!connected||status==='connecting-runtime'||status==='archive'} placeholder={operate?'Read the current state, then turn labels off in the active view.':'Read the current state or investigate Earth and Mars.'}></textarea><div class="actions"><button class="primary" disabled={!connected||busy||status==='archive'||!text.trim()} type="submit">Send</button><button type="button" disabled={!connected||!busy||status==='connecting-runtime'} onclick={()=>action(()=>{client.cancel();status='stopping';notice='Stopping Codex does not undo changes already applied.';})}>Stop</button></div></form>
   <p class="hint">Closing this panel keeps the connection. Disconnect revokes access. Reloading creates a new model instance and requires approval.</p>
 </aside>
 <style>
   .agent-access{position:fixed;z-index:80;right:12px;top:76px;bottom:42px;width:min(420px,calc(100vw - 24px));box-sizing:border-box;overflow:auto;background:#101b2b;color:#dbe5ed;border:1px solid #405369;border-radius:8px;padding:20px;box-shadow:0 10px 50px #0008;font-size:13px;line-height:1.55}
   header{display:flex;justify-content:space-between;align-items:start}h2{font-size:21px;margin:3px 0 12px}small{font-size:10px;letter-spacing:.1em;color:#a7c9b6}button{font:inherit;cursor:pointer;background:transparent;color:inherit;border:1px solid #52677b;border-radius:4px;padding:8px}button:disabled{opacity:.45;cursor:default}.primary{background:#b5d8c4;color:#102a25;font-weight:600}.status{font-weight:600;color:#cee7d6}.hint{font-size:12px;color:#a8bacb}.permission{display:flex;gap:8px;align-items:start;margin:16px 0}.actions{display:flex;gap:8px;margin:12px 0}.actions .primary{flex:1}.messages{margin:20px 0}article{padding:12px;border:1px solid #33475e;margin:12px 0;border-radius:5px}article.user{background:#1a2d40}article p{white-space:pre-wrap;overflow-wrap:anywhere;margin:6px 0}textarea{font:inherit;display:block;box-sizing:border-box;width:100%;margin:8px 0;background:#18273a;border:1px solid #52677b;border-radius:4px;color:#f0f5f8;padding:10px;resize:vertical}details{margin:16px 0;font-size:12px}summary{cursor:pointer}.activity{overflow-wrap:anywhere}:focus-visible{outline:2px solid #d6ec89;outline-offset:3px}
   article.bridge{border-left:3px solid #a7c9b6;background:#172a35}article.bridge small{color:#d6ec89}
+  input[type=search],#conversation-title{box-sizing:border-box;width:100%;padding:8px;margin:8px 0}ul{padding-left:14px}li{margin:8px 0}li button{text-align:left}pre{white-space:pre-wrap;overflow-wrap:anywhere}
 </style>

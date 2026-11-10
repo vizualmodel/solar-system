@@ -18,3 +18,7 @@ test('unknown control outcomes do not claim the model was unchanged and new conv
   const text=failureFeedback('Operation timed out.','control');assert.match(text,/current state before trying/);assert.match(text,/Nothing will be retried automatically/);assert.doesNotMatch(text,/no (?:files|settings|state|changes) (?:were|was)/i);
   assert.match(conversationFeedback(false),/new conversation/);assert.match(conversationFeedback(false),/read only/);assert.match(conversationFeedback(true),/approval/);
 });
+
+test('resumption explains fresh permissions without claiming a new thread or restored model state',()=>{
+  const text=conversationFeedback(false,true);assert.match(text,/resumed/);assert.match(text,/current permissions/);assert.match(text,/state was not restored/);assert.doesNotMatch(text,/new conversation/);
+});

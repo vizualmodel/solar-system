@@ -33,7 +33,9 @@ export function createBridgeClient(event:(value:Event)=>void) {
         }else if(phase==='approving'&&value.type==='connected'){
           if(value.protocol!==1||value.runtime!=='Codex'||!/^[A-Za-z0-9_-]{43}$/.test(value.credential)||!Array.isArray(value.capabilities)||!value.capabilities.includes('new_conversation'))throw Error('This Bridge build does not support the model conversation. Install the matching build.');
           phase='connected';clearTimeout(a.expiry);a.credential=value.credential;a.secret=undefined;a.toolIds=new Set<string>();a.adapter=createBrowserActionAdapter(__MODEL_BUILD__,__MODEL_DATA__);a.target={sessionId:value.session,generation:1,read:true,operate:value.operate===true};
-          emit({type:'connection',connected:true,operate:a.target.operate,runtime:'Codex'});
+          a.durable=value.capabilities.includes('durable_history');a.historyAccess=value.capabilities.includes('history_access');
+          emit({type:'connection',connected:true,operate:a.target.operate,runtime:'Codex',durable:a.durable,historyAccess:a.historyAccess});
+          if(a.durable){emit({type:'status',status:'archive',message:'Connected to Bridge. Start a conversation or read history without starting Codex.'});if(a.historyAccess)request('history_list');return;}
           emit({type:'status',status:'connecting-runtime',message:'Website approved. Connecting Codex for this model.'});
           request('new_conversation');
         }else if(phase==='connected'&&value.type==='conversation'){
@@ -59,7 +61,8 @@ export function createBridgeClient(event:(value:Event)=>void) {
   }
   return{
     connect(control:boolean){dispose();if(!window.isSecureContext)throw Error('Open the hosted HTTPS model or a model served by Bridge.');const secret=crypto.getRandomValues(new Uint8Array(32));const a:any=current={instance:crypto.randomUUID(),secret,control,expires:Date.now()+60000,tries:0,cancelled:false};a.expiry=setTimeout(()=>{if(current!==a)return;dispose();emit({type:'status',status:'disconnected',message:'Pairing expired before this website was approved. Start a fresh connection; no previous action will be sent again.'});},60000);const url=new URL('vizualmodel://connect');url.search=new URLSearchParams({v:'1',instance:a.instance,challenge:b64(secret),expires:String(a.expires)}).toString();emit({type:'status',status:'connecting',message:'Opening Bridge. Confirm the application launch and any browser local-access request.'});location.href=url.href;a.retry=setTimeout(()=>attempt(a),800);},
-    send(text:string){request('chat',{text});},cancel(){request('cancel');},newConversation(){request('new_conversation');emit({type:'status',status:'connecting-runtime',message:'Starting a new Codex conversation.'});},
+    send(text:string){const id=crypto.randomUUID();request('chat',{text,id});return id;},cancel(){request('cancel');},newConversation(fromConversation?:string,contextIds?:string[]){request('new_conversation',fromConversation?{fromConversation,contextIds}:{});emit({type:'status',status:'connecting-runtime',message:'Starting a new Codex conversation.'});},
+    history(query=''){request('history_list',{query});},read(id:string){request('history_read',{conversationId:id});},resume(id:string){request('resume_conversation',{conversationId:id});emit({type:'status',status:'connecting-runtime',message:'Resuming with current permissions and fresh model tools. Model state is not restored.'});},rename(id:string,title:string){request('history_rename',{conversationId:id,title});},export(id:string,format:'json'|'markdown'){request('history_export',{conversationId:id,format});},delete(id:string){request('history_delete',{conversationId:id,scope:'bridge_archive'});},
     disconnect(){if(current?.credential)request('disconnect');dispose();emit({type:'status',status:'disconnected',message:'Disconnected by this model. Completed changes are preserved.'});},dispose,
   };
 }

@@ -9,7 +9,7 @@ import {WebSocket,WebSocketServer} from 'ws';
 
 // The actual shipped client runs against real sockets/crypto. DOM, protocol
 // activation and model dispatch are fixtures, not real Chrome or model evidence.
-async function fixture(t:any,options:{delayedActivation?:boolean;badProof?:boolean;deny?:boolean;autoConversation?:boolean;stall?:boolean}={}){
+async function fixture(t:any,options:{delayedActivation?:boolean;badProof?:boolean;deny?:boolean;autoConversation?:boolean;stall?:boolean;durable?:boolean;historyAccess?:boolean}={}){
   const origin='https://model.example',server=new WebSocketServer({host:'127.0.0.1',port:0});
   await new Promise<void>(resolve=>server.once('listening',resolve));const address=server.address();assert.ok(address&&typeof address==='object');const port=address.port;
   const events:any[]=[],frames:any[]=[],bus=new EventEmitter();let launch:URL,launches=0,connections=0,client:any,active=!options.delayedActivation,conversationSocket:WebSocket|undefined;
@@ -24,7 +24,7 @@ async function fixture(t:any,options:{delayedActivation?:boolean;badProof?:boole
     if(frame.type==='prove'){
       assert.equal(frame.proof,signature('browser',nonce,instance));
       if(options.deny){socket.close(1008,'Access not approved.');return;}
-      socket.send(JSON.stringify({type:'connected',protocol:1,runtime:'Codex',session:randomBytes(32).toString('base64url'),credential:randomBytes(32).toString('base64url'),operate:false,capabilities:['chat','new_conversation']}));
+      socket.send(JSON.stringify({type:'connected',protocol:1,runtime:'Codex',session:randomBytes(32).toString('base64url'),credential:randomBytes(32).toString('base64url'),operate:false,capabilities:['chat','new_conversation',...(options.durable?['durable_history']:[]),...(options.historyAccess?['history_access']:[])]}));
     }
     if(frame.type==='new_conversation'){conversationSocket=socket;if(options.autoConversation!==false)socket.send(JSON.stringify({type:'conversation',threadId:'fixture-thread',history:[]}));}
     if(frame.type==='tool_result'){socket.send(JSON.stringify({type:'tool_activity',id:frame.id,name:'read_state',status:'succeeded'}));socket.send(JSON.stringify({type:'tool_activity',id:'runtime-call',name:'read_state',status:'completed'}));}
@@ -68,4 +68,15 @@ test('a listener that stalls before proving identity cannot keep pairing pending
 test('one browser operation is not counted twice through runtime and Bridge activity events',async t=>{
   const f=await fixture(t);f.client.connect(false);await f.wait('event',e=>e.type==='status'&&e.status==='ready');f.readFixture();await f.wait('event',e=>e.type==='tool_activity'&&e.status==='succeeded');
   const activity=f.events.filter(e=>e.type==='tool_activity');assert.deepEqual(activity.map(e=>e.id),['browser-action','browser-action']);assert.equal(new Set(activity.map(e=>e.id)).size,1);
+});
+
+test('durable history connects without a runtime; reading and resume are separate deliberate requests',async t=>{
+  const f=await fixture(t,{durable:true,historyAccess:true});f.client.connect(false);await f.wait('frame',e=>e.type==='history_list');
+  assert.equal(f.frames.some(e=>['new_conversation','chat'].includes(e.type)),false);assert.equal([...f.events].reverse().find(e=>e.type==='status')?.status,'archive');
+  f.client.read('selected-archive');const read=await f.wait('frame',e=>e.type==='history_read');assert.equal(read.conversationId,'selected-archive');assert.equal(read.threadId,undefined);
+  f.client.resume('selected-archive');await f.wait('frame',e=>e.type==='resume_conversation');assert.equal(f.frames.some(e=>e.type==='chat'),false);
+});
+
+test('history denied at consent remains in trusted Bridge; client sends no archive request automatically',async t=>{
+  const f=await fixture(t,{durable:true});f.client.connect(false);await f.wait('event',e=>e.type==='status'&&e.status==='archive');assert.equal(f.frames.some(e=>e.type.startsWith('history_')||e.type==='new_conversation'),false);
 });
