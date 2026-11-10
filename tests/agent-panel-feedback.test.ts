@@ -22,3 +22,6 @@ test('unknown control outcomes do not claim the model was unchanged and new conv
 test('resumption explains fresh permissions without claiming a new thread or restored model state',()=>{
   const text=conversationFeedback(false,true);assert.match(text,/resumed/);assert.match(text,/current permissions/);assert.match(text,/state was not restored/);assert.doesNotMatch(text,/new conversation/);
 });
+test('setup and offline failures give concrete recovery without hiding the runtime error',()=>{
+  assert.match(failureFeedback('Network error sending request','control'),/archived history and local calculations remain available/);assert.match(failureFeedback('Codex is not signed in','read'),/supported Codex sign-in/);assert.match(failureFeedback('This build was tested with another version','disconnected'),/separate validation/);assert.match(failureFeedback('Codex was not found','disconnected'),/Test connection/);
+});

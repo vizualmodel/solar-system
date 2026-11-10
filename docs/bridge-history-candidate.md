@@ -1,5 +1,7 @@
 # Bridge history panel — private review candidate
 
+Historical 0.3.0-review.1 preparation. Superseded by [history and delegation 0.3.0-review.2](bridge-history-and-delegation.md), which validates MXC and enables the separate coding role.
+
 The `bridge/history-delegation-2026-11-10` follow-up adds Conversations to the existing Agent panel: recent activity, title/transcript search, archive read, explicit native resume, rename, Markdown/JSON export and separately confirmed Bridge archive deletion. This changes no numerical calculation or model state contract. The original hosted build is not changed by building this checkout.
 
 With Bridge 0.3.0-review.1, connecting starts no runtime. Reading an archive is separate from Resume. The panel shows changed-build context, interrupted messages and another tab's active writer. Failed native continuation preserves the transcript and offers an explicitly new conversation with user-selected prior text. Current permissions and fresh tools govern resumed operations; model state is never restored by reopening a conversation.
