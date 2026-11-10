@@ -14,7 +14,9 @@ The owner confirmed two-tab isolation, including rejection of B's read-only muta
 
 The owner reported that disconnect succeeded, while reconnect required a second attempt. A real-socket fixture reproduced a timing failure in the original shipped client: an already-running listener rejected the hello before the OS launch activation arrived. The revised client retries only that unauthenticated hello within the original pairing deadline. Failed identity proofs, denied consent, chat and model actions are never automatically retried. This matches the reported symptoms but does not establish the exact cause of the owner's first attempt.
 
-The browser now starts the Codex conversation immediately after native model consent, using Bridge 0.2.3's existing New conversation capability, and waits for conversation acknowledgement before showing Ready. Reconnection explicitly starts a new conversation without replaying actions. The changes require only updated model assets; the accepted installer remains unchanged. Updated graphical feedback/reconnect acceptance is still required. Denied-action and Stop outcomes have not yet been individually confirmed.
+The browser now starts the Codex conversation immediately after native model consent, using Bridge 0.2.3's existing New conversation capability, and waits for conversation acknowledgement before showing Ready. Reconnection explicitly starts a new conversation without replaying actions. The changes require only updated model assets; the accepted installer remains unchanged.
+
+The owner subsequently passed the updated source `4e302438c2d5fa4b60a45a584c3a38a13083e1ae` at the isolated retest preview: read-only conversational explanation, one activity entry per actual read and successful single-click reconnect to Ready. Denied approval was confirmed to preserve state. The manual Stop test was explicitly skipped after the reply completed before interruption; it is not recorded as passed. Separate real-runtime cancellation/resume and automated ordering evidence remain distinct. The private milestone is concluded with that documented omission; public release is not authorized.
 
 ## Earlier local-folder acceptance on Bridge 0.2.1
 
@@ -41,4 +43,4 @@ Bridge's follow-up uses the selected model's advertised reasoning effort by defa
 
 Structured owner evidence and exact runtime restrictions: https://github.com/vizualmodel/bridge/blob/bridge/connection-proof/docs/solar-panel-acceptance.json and https://github.com/vizualmodel/bridge/blob/bridge/connection-proof/docs/codex-runtime.md .
 
-Review source only. No merge, model deployment or public installer release. Remaining broad acceptance includes concurrent real tabs, graphical Stop/resume/failure/offline flows, denied browser permissions and keyboard/narrow-window checks.
+Review source and explicitly approved isolated previews only. No merge, production model deployment or public installer release. Concurrent real-tab isolation passed. Manual Stop was explicitly skipped; broader release checks still include graphical resume/failure/offline flows, denied browser permissions and keyboard/narrow-window checks.
