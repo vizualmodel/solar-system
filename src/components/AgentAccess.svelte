@@ -14,9 +14,9 @@
   const labels:Record<string,string>={disconnected:'Disconnected',connecting:'Opening Bridge',ready:'Ready',working:'Working', 'connecting-runtime':'Connecting Codex','waiting-for-approval':'Waiting for approval',interrupted:'Stopped',stopped:'Stopped',stopping:'Stopping',error:'Error',failed:'Failed'};
   function showFailure(message:unknown){issueId??=crypto.randomUUID();messages=bridgeNotice(messages,issueId,failureFeedback(message,connected?operate?'control':'read':'disconnected'));}
   function event(value:any){
-    if(value.type==='connection'){connected=value.connected;operate=!!value.operate;if(!connected){status='disconnected';runtime='';model='';}}
+    if(value.type==='connection'){connected=value.connected;operate=!!value.operate;if(connected){messages=[];tools=[];issueId=undefined;}else{status='disconnected';runtime='';model='';}}
     if(value.type==='status'){status=value.status;notice=value.message??'';if(['error','failed'].includes(status))showFailure(value.message);if(status==='disconnected'&&messages.length)messages=bridgeNotice(messages,crypto.randomUUID(),notice||'Disconnected. Connect again to start a new conversation.');}
-    if(value.type==='conversation'){issueId=undefined;messages=bridgeNotice([],crypto.randomUUID(),conversationFeedback(operate));tools=[];}
+    if(value.type==='conversation'){issueId=undefined;messages=bridgeNotice(messages,crypto.randomUUID(),conversationFeedback(operate));tools=[];}
     if(value.type==='runtime'){runtime=value.name;model=value.model;effort=value.effort??'';}
     if(value.type==='text_delta'){const found=messages.find(m=>m.id===value.id);messages=found?messages.map(m=>m.id===value.id?{...m,text:m.text+value.text}:m):[...messages,{id:value.id,role:'assistant',text:value.text}];}
     if(value.type==='message')messages=messages.some(m=>m.id===value.id)?messages.map(m=>m.id===value.id?{...m,text:value.text}:m):[...messages,{id:value.id,role:'assistant',text:value.text}];
