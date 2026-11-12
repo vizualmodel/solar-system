@@ -1,0 +1,68 @@
+import { createBrowserActionAdapter } from './browser-adapter';
+import { modelDescriptor } from './manifest';
+import type { ModelRequest } from './adapter';
+type Event = {type:string;[key:string]:any};
+const b64=(bytes:ArrayBuffer|Uint8Array)=>btoa(String.fromCharCode(...new Uint8Array(bytes))).replaceAll('+','-').replaceAll('/','_').replace(/=+$/,'');
+async function proof(secret:Uint8Array,role:string,nonce:string,instance:string){const key=await crypto.subtle.importKey('raw',secret as BufferSource,{name:'HMAC',hash:'SHA-256'},false,['sign']);return b64(await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(JSON.stringify([1,role,nonce,location.origin,instance]))));}
+export function createBridgeClient(event:(value:Event)=>void) {
+  let current:any;
+  function emit(value:Event){event(value);}
+  function dispose(){if(current){current.cancelled=true;clearTimeout(current.retry);clearTimeout(current.expiry);current.adapter?.dispose();current.socket?.close();current.credential=undefined;current=undefined;}emit({type:'connection',connected:false});}
+  function request(type:string,fields:Record<string,unknown>={}){if(!current?.credential||current.socket.readyState!==WebSocket.OPEN)throw Error('Connect this model to Bridge first.');current.socket.send(JSON.stringify({type,id:crypto.randomUUID(),...fields,credential:current.credential}));}
+  function retry(a:any){emit({type:'status',status:'connecting',message:'Waiting for Bridge to receive this launch. Confirm the application launch and any browser local-access prompt.'});a.retry=setTimeout(()=>attempt(a),Math.min(500*2**a.tries,4000));}
+  function attempt(a:any){
+    if(current!==a||a.cancelled)return;
+    if(Date.now()>=a.expires||a.tries++>=16){dispose();emit({type:'status',status:'disconnected',message:'Connection did not complete. Open Bridge from the Start menu, review browser permissions, then retry. No previous action will be sent again.'});return;}
+    const socket=a.socket=new WebSocket('ws://127.0.0.1:46317/v1/connect',['vizualmodel.v1']);let phase='opening';
+    const opening=setTimeout(()=>{if(phase==='opening')socket.close();},2500);
+    socket.onopen=()=>{clearTimeout(opening);phase='proof';socket.send(JSON.stringify({type:'hello',protocol:1,instance:a.instance}));};
+    socket.onmessage=async message=>{
+      if(current!==a||a.cancelled)return;
+      try{
+        const value=JSON.parse(message.data);
+        if(phase==='proof'&&value.type==='error'){
+          // The fixed listener can be ready before Windows delivers activation.
+          // Only the unauthenticated hello is retried. Never retry a failed
+          // identity proof, native consent, chat or model operation.
+          phase='awaiting-activation';socket.close();return;
+        }else if(phase==='proof'&&value.type==='proof'){
+          phase='verifying';
+          if(value.protocol!==1||typeof value.nonce!=='string'||!/^[A-Za-z0-9_-]{43}$/.test(value.nonce)||value.proof!==await proof(a.secret,'bridge',value.nonce,a.instance))throw Error('The local process did not match the Bridge launch. Connection stopped.');
+          const response=await proof(a.secret,'browser',value.nonce,a.instance);if(current!==a||a.cancelled)return;
+          phase='approving';socket.send(JSON.stringify({type:'prove',proof:response,label:modelDescriptor.label,descriptor:modelDescriptor,requestControl:a.control}));emit({type:'status',status:'waiting-for-approval',message:'Review the website and model permissions in Bridge.'});
+        }else if(phase==='approving'&&value.type==='connected'){
+          if(value.protocol!==1||value.runtime!=='Codex'||!/^[A-Za-z0-9_-]{43}$/.test(value.credential)||!Array.isArray(value.capabilities)||!value.capabilities.includes('new_conversation'))throw Error('This Bridge build does not support the model conversation. Install the matching build.');
+          phase='connected';clearTimeout(a.expiry);a.credential=value.credential;a.secret=undefined;a.toolIds=new Set<string>();a.adapter=createBrowserActionAdapter(__MODEL_BUILD__,__MODEL_DATA__);a.target={sessionId:value.session,generation:1,read:true,operate:value.operate===true};
+          a.durable=value.capabilities.includes('durable_history');a.historyAccess=value.capabilities.includes('history_access');
+          emit({type:'connection',connected:true,operate:a.target.operate,runtime:'Codex',durable:a.durable,historyAccess:a.historyAccess});
+          if(a.durable){emit({type:'status',status:'archive',message:'Connected to Bridge. Start a conversation or read history without starting Codex.'});if(a.historyAccess)request('history_list');return;}
+          emit({type:'status',status:'connecting-runtime',message:'Website approved. Connecting Codex for this model.'});
+          request('new_conversation');
+        }else if(phase==='connected'&&value.type==='conversation'){
+          a.toolIds.clear();
+          emit(value);emit({type:'status',status:'ready',message:'Codex is connected. Send a message; any requested action approval appears in Bridge.'});
+        }else if(phase==='connected'&&value.type==='tool_activity'){
+          // Count the actual browser action once, rather than also showing the
+          // runtime's surrounding MCP call as a second model operation.
+          if(a.toolIds.has(value.id))emit(value);
+        }else if(phase==='connected'&&value.type==='tool_call'){
+          a.toolIds.add(value.id);if(a.toolIds.size>100)a.toolIds.delete(a.toolIds.values().next().value);
+          emit({type:'tool_activity',id:value.id,name:value.tool,status:'running'});
+          try{
+            const result=await a.adapter.execute({protocol:1,id:value.id,sessionId:a.target.sessionId,generation:1,deadline:value.deadline,action:value.tool,inputs:value.inputs} as ModelRequest,a.target);
+            if(current===a&&!a.cancelled)socket.send(JSON.stringify({type:'tool_result',id:value.id,credential:a.credential,success:true,result}));
+          }catch(error){if(current===a&&!a.cancelled)socket.send(JSON.stringify({type:'tool_result',id:value.id,credential:a.credential,success:false,error:(error as Error).message}));}
+        }else if(phase==='connected')emit(value);
+        else if(value.type==='error')throw Error(value.message??'Connection rejected. Retry with a new connection.');
+      }catch(error){if(current===a&&!a.cancelled){dispose();emit({type:'status',status:'error',message:(error as Error).message});}}
+    };
+    socket.onerror=()=>{};
+    socket.onclose=()=>{clearTimeout(opening);if(current!==a||a.cancelled)return;if(['opening','proof','awaiting-activation'].includes(phase))retry(a);else{dispose();emit({type:'status',status:'disconnected',message:phase==='approving'?'Connection was not approved or pairing expired. Review Bridge and start a fresh connection.':'Disconnected. Pending actions will not be replayed. Read fresh state after an uncertain change.'});}};
+  }
+  return{
+    connect(control:boolean){dispose();if(!window.isSecureContext)throw Error('Open the hosted HTTPS model or a model served by Bridge.');const secret=crypto.getRandomValues(new Uint8Array(32));const a:any=current={instance:crypto.randomUUID(),secret,control,expires:Date.now()+60000,tries:0,cancelled:false};a.expiry=setTimeout(()=>{if(current!==a)return;dispose();emit({type:'status',status:'disconnected',message:'Pairing expired before this website was approved. Start a fresh connection; no previous action will be sent again.'});},60000);const url=new URL('vizualmodel://connect');url.search=new URLSearchParams({v:'1',instance:a.instance,challenge:b64(secret),expires:String(a.expires)}).toString();emit({type:'status',status:'connecting',message:'Opening Bridge. Confirm the application launch and any browser local-access request.'});location.href=url.href;a.retry=setTimeout(()=>attempt(a),800);},
+    send(text:string){const id=crypto.randomUUID();request('chat',{text,id});return id;},cancel(){request('cancel');},newConversation(fromConversation?:string,contextIds?:string[]){request('new_conversation',fromConversation?{fromConversation,contextIds}:{});emit({type:'status',status:'connecting-runtime',message:'Starting a new Codex conversation.'});},
+    history(query=''){request('history_list',{query});},read(id:string){request('history_read',{conversationId:id});},resume(id:string){request('resume_conversation',{conversationId:id});emit({type:'status',status:'connecting-runtime',message:'Resuming with current permissions and fresh model tools. Model state is not restored.'});},rename(id:string,title:string){request('history_rename',{conversationId:id,title});},export(id:string,format:'json'|'markdown'){request('history_export',{conversationId:id,format});},delete(id:string){request('history_delete',{conversationId:id,scope:'bridge_archive'});},
+    disconnect(){if(current?.credential)request('disconnect');dispose();emit({type:'status',status:'disconnected',message:'Disconnected by this model. Completed changes are preserved.'});},dispose,
+  };
+}
