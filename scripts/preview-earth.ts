@@ -1,10 +1,11 @@
 // Offline CPU approximation for art/physics QA. It is not a browser screenshot.
 import {writeFileSync,readFileSync,mkdirSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {deflateSync} from 'node:zlib';
 import {PerspectiveCamera,Vector3} from 'three';
 import {raySphere,CLOUD_RADIUS,ATMOSPHERE_RADIUS,cloudAnimation} from '../src/lib/earth-math';
-const staging='C:/dev/earth-shader-check/preview';mkdirSync(staging,{recursive:true});
+const staging=fileURLToPath(new URL('../.validation/earth-preview/',import.meta.url));mkdirSync(staging,{recursive:true});
 execFileSync('powershell.exe',['-NoProfile','-NonInteractive','-Command',`
  Add-Type -AssemblyName System.Drawing
  foreach($name in @('day-4k','clouds-4k','night-4k','ocean-2k')) {

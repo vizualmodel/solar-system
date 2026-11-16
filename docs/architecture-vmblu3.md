@@ -2,7 +2,7 @@
 
 > Historical source review. Referenced vmblu architecture-editor files/tools are not required model runtime resources and are not bundled in this baseline. Current source inventory and limitations are in [Phase 1 baseline](phase1-baseline.md).
 
-The root `solar-system.blu` opens the current software model in the vmblu3 editor. Its semantic blueprint is `.vmblu/solar-system.blu.json`; presentation is `.vmblu/solar-system.viz.json`. Both use the local `0.1.0-draft` definitions. This review was authored on 14 October 2026 from the working files on `companion/local-pilot`, including existing uncommitted changes. It describes the working tree rather than claiming correspondence to the last Git commit or the currently accepted companion build.
+The root `solar-system.blu` opens the current software model in the vmblu3 editor. Its semantic blueprint is `.vmblu/space/solar-system.blu.json`; presentation is `.vmblu/space/solar-system.viz.json`. Both use the local `0.1.0-draft` definitions. This review was authored on 14 October 2026 from the working files on `companion/local-pilot`, including existing uncommitted changes. It describes the working tree rather than claiming correspondence to the last Git commit or the currently accepted companion build.
 
 The model contains 7 actors, 33 components, 76 interactions, 10 architectural walkthroughs and 9 initial graphics views. Names and descriptions are authored explanations grounded in the inspected implementation. `status: existing` means source-observed behavior, not independent verification. All identifiers are stable architectural identities; display teams and routes are presentation only.
 
@@ -41,7 +41,7 @@ Blueprint/visualisation/descriptor validity is checked using vmblu3's real local
 
 ## Open it
 
-In VS Code, run **vmblu3: Open architecture** and choose `C:/dev/blu/solar-system/solar-system.blu`. Source hints are relative to this workspace and can open the existing files/symbols through the extension host.
+In VS Code, run **vmblu3: Open architecture** and choose `C:/dev/blu/space/solar-system/solar-system.blu`. Source hints are relative to this workspace and can open the existing files/symbols through the extension host.
 
 In the browser editor, use **Open folder** for this project and select `solar-system.blu` from the entries. Alternatively select the two JSON artifacts together with **Open files**; same-basename loading associates their layouts. Browser source navigation remains a readable-locator fallback.
 
