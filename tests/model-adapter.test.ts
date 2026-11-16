@@ -10,7 +10,7 @@ import type { Ephemeris } from '../src/lib/ephemeris';
 // permit domain unit tests; this fixture is not browser acceptance evidence.
 Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem: () => null, setItem: () => {} } });
 Object.defineProperty(globalThis, 'location', { configurable: true, value: { search: '' } });
-const { applyControl } = await import('../companion/controls');
+const { applyControl } = await import('../model-service/controls');
 
 const data = JSON.parse(readFileSync(new URL('../public/data/ephemeris.json', import.meta.url), 'utf8')) as Ephemeris;
 function fixture() {

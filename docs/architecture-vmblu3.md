@@ -1,3 +1,5 @@
+> Historical architecture: superseded by the standard Bridge client and runtime-free model-service migration. Current setup is in the root README and model-service/README.md; the embedded Workspace agent and bundled Companion described below are retired.
+
 # Solar Observatory architecture — vmblu3 source review
 
 > Historical source review. Referenced vmblu architecture-editor files/tools are not required model runtime resources and are not bundled in this baseline. Current source inventory and limitations are in [Phase 1 baseline](phase1-baseline.md).

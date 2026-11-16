@@ -1,0 +1,716 @@
+[
+  {
+    "name": "get_simulation_state",
+    "description": "Read acknowledged simulation state and workspace identity. detail=full includes all simulation state and workspace UI settings.",
+    "operation": "read",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "set_simulation_time",
+    "description": "Set ISO simulation time with timezone, preserving playback and respecting FROM/TO.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "time": {
+          "type": "string"
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "required": [
+        "time"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "timeline",
+    "description": "Configure time, playing, speed (days per second) and FROM/TO together; step seconds or jump to start/end. Range changes clamp the date like the UI.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "type": "object",
+          "properties": {
+            "time": {
+              "type": "string"
+            },
+            "playing": {
+              "type": "boolean"
+            },
+            "speed": {
+              "description": "Simulation days per real second.",
+              "type": "number",
+              "minimum": -365,
+              "maximum": 365
+            },
+            "start": {
+              "type": "string"
+            },
+            "end": {
+              "type": "string"
+            },
+            "stepSeconds": {
+              "type": "number"
+            },
+            "jump": {
+              "type": "string",
+              "enum": [
+                "start",
+                "end"
+              ]
+            },
+            "resetRange": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "required": [
+        "settings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "camera",
+    "description": "Configure camera focus/preset, tracking, position/target in Y-up AU, or alignment/surface mode with geographic observer. Defaults to active view. Tracking changes preserve viewpoint. Surface/alignment use true scale and Earth tracking.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "viewId": {
+          "description": "Defaults to the active view.",
+          "type": "string",
+          "maxLength": 100
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "focus": {
+              "type": "string",
+              "enum": [
+                "sun",
+                "mercury",
+                "venus",
+                "earth",
+                "mars",
+                "jupiter",
+                "saturn",
+                "uranus",
+                "neptune",
+                "moon",
+                "phobos",
+                "deimos",
+                "io",
+                "europa",
+                "ganymede",
+                "callisto",
+                "titan",
+                "enceladus",
+                "titania",
+                "oberon",
+                "triton",
+                "hubble",
+                "iss"
+              ]
+            },
+            "preset": {
+              "type": "string",
+              "enum": [
+                "system",
+                "portrait",
+                "top",
+                "inclined"
+              ]
+            },
+            "follow": {
+              "type": "boolean"
+            },
+            "camera": {
+              "description": "Position in AU in the renderer Y-up frame; relative to focus when following.",
+              "minItems": 3,
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "target": {
+              "minItems": 3,
+              "maxItems": 3,
+              "type": "array",
+              "items": {
+                "type": "number"
+              }
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "orbit",
+                "alignment",
+                "surface"
+              ]
+            },
+            "observer": {
+              "type": "object",
+              "properties": {
+                "latitude": {
+                  "type": "number",
+                  "minimum": -90,
+                  "maximum": 90
+                },
+                "longitude": {
+                  "type": "number",
+                  "minimum": -180,
+                  "maximum": 180
+                },
+                "altitude": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100000,
+                  "description": "Metres above the surface."
+                }
+              },
+              "required": [
+                "latitude",
+                "longitude",
+                "altitude"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "required": [
+        "settings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "scene",
+    "description": "Configure one view’s visibility, layers, eclipse shadows and display scales with a settings payload.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "viewId": {
+          "description": "Defaults to the active view.",
+          "type": "string",
+          "maxLength": 100
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "orbits": {
+              "type": "boolean"
+            },
+            "labels": {
+              "type": "boolean"
+            },
+            "stars": {
+              "type": "boolean"
+            },
+            "constellations": {
+              "type": "boolean"
+            },
+            "localLandscape": {
+              "type": "boolean"
+            },
+            "moonUmbra": {
+              "type": "boolean"
+            },
+            "moonPenumbra": {
+              "type": "boolean"
+            },
+            "size": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 200
+            },
+            "moonScale": {
+              "type": "number",
+              "minimum": 1,
+              "maximum": 100
+            },
+            "visible": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "sun",
+                  "mercury",
+                  "venus",
+                  "earth",
+                  "mars",
+                  "jupiter",
+                  "saturn",
+                  "uranus",
+                  "neptune",
+                  "moon",
+                  "phobos",
+                  "deimos",
+                  "io",
+                  "europa",
+                  "ganymede",
+                  "callisto",
+                  "titan",
+                  "enceladus",
+                  "titania",
+                  "oberon",
+                  "triton"
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "required": [
+        "settings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "satellites",
+    "description": "Configure satellite visibility/magnification or cached populationGroups (geo, leo, starlink, navigation, gps); populationSelection selects a NORAD ID for its orbit/card. Filters combine without duplicates. closeUp=iss prepares true-size tracking at real-time speed, paused ready for Play.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "viewId": {
+          "description": "Defaults to the active view.",
+          "type": "string",
+          "maxLength": 100
+        },
+        "settings": {
+          "type": "object",
+          "properties": {
+            "populationGroups": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "geo",
+                  "leo",
+                  "starlink",
+                  "navigation",
+                  "gps"
+                ]
+              }
+            },
+            "populationSelection": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 1,
+              "maximum": 999999999
+            },
+            "closeUp": {
+              "description": "True-size ISS tracking camera at real-time speed; pauses ready for Play.",
+              "type": "string",
+              "enum": [
+                "iss"
+              ]
+            },
+            "visible": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": [
+                  "iss",
+                  "hubble"
+                ]
+              }
+            },
+            "magnification": {
+              "type": "object",
+              "properties": {
+                "iss": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 100000
+                },
+                "hubble": {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 100000
+                }
+              },
+              "additionalProperties": false
+            },
+            "explore": {
+              "type": "string",
+              "enum": [
+                "iss",
+                "hubble"
+              ]
+            },
+            "focus": {
+              "type": "string",
+              "enum": [
+                "iss",
+                "hubble"
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "required": [
+        "settings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "views",
+    "description": "Select, split, close or arrange views. Supply viewId or use active; row is side by side. Maximum six views; final view cannot close.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "select",
+            "split",
+            "close",
+            "layout"
+          ]
+        },
+        "viewId": {
+          "description": "Defaults to the active view.",
+          "type": "string",
+          "maxLength": 100
+        },
+        "direction": {
+          "type": "string",
+          "enum": [
+            "row",
+            "column"
+          ]
+        },
+        "layout": {
+          "description": "Recursive {kind:\"view\",id} or {kind:\"split\",direction,children:[a,b]}; must include every view exactly once."
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "session",
+    "description": "Rename, save in browser, export JSON in result, import validated simulation state (paused), start new session, or apply a preset. New returns previousSimulationState. Scenarios are reusable prompts managed with the scenarios tool. Presets: overview, earth, inner, spain-eclipse.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "rename",
+            "save",
+            "export",
+            "import",
+            "new",
+            "preset"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "simulationState": {
+          "description": "Exported version 1 simulation state for import; validated before mutation."
+        },
+        "scenario": {
+          "description": "Deprecated alias for simulationState, for older clients."
+        },
+        "preset": {
+          "type": "string",
+          "enum": [
+            "overview",
+            "earth",
+            "inner",
+            "spain-eclipse"
+          ]
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "workspace",
+    "description": "Open/close settings, charts, companion and about; choose settings tab and expand/collapse named sections. Does not answer Codex approvals.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "type": "object",
+          "properties": {
+            "settings": {
+              "type": "boolean"
+            },
+            "charts": {
+              "type": "boolean"
+            },
+            "companion": {
+              "type": "boolean"
+            },
+            "about": {
+              "type": "boolean"
+            },
+            "tab": {
+              "type": "string",
+              "enum": [
+                "scene",
+                "camera"
+              ]
+            },
+            "sections": {
+              "type": "object",
+              "properties": {
+                "landscape": {
+                  "type": "boolean"
+                },
+                "satellites": {
+                  "type": "boolean"
+                },
+                "eclipse": {
+                  "type": "boolean"
+                },
+                "layers": {
+                  "type": "boolean"
+                },
+                "scale": {
+                  "type": "boolean"
+                },
+                "bodies": {
+                  "type": "boolean"
+                },
+                "interest": {
+                  "type": "boolean"
+                },
+                "perspective": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "required": [
+        "settings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "charts",
+    "description": "Configure distance pair and panel; optionally jump to next closest approach within FROM/TO and pause.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "settings": {
+          "type": "object",
+          "properties": {
+            "from": {
+              "type": "string",
+              "enum": [
+                "sun",
+                "mercury",
+                "venus",
+                "earth",
+                "mars",
+                "jupiter",
+                "saturn",
+                "uranus",
+                "neptune",
+                "moon",
+                "phobos",
+                "deimos",
+                "io",
+                "europa",
+                "ganymede",
+                "callisto",
+                "titan",
+                "enceladus",
+                "titania",
+                "oberon",
+                "triton"
+              ]
+            },
+            "to": {
+              "type": "string",
+              "enum": [
+                "sun",
+                "mercury",
+                "venus",
+                "earth",
+                "mars",
+                "jupiter",
+                "saturn",
+                "uranus",
+                "neptune",
+                "moon",
+                "phobos",
+                "deimos",
+                "io",
+                "europa",
+                "ganymede",
+                "callisto",
+                "titan",
+                "enceladus",
+                "titania",
+                "oberon",
+                "triton"
+              ]
+            },
+            "open": {
+              "type": "boolean"
+            },
+            "nextClosestApproach": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "detail": {
+          "type": "string",
+          "enum": [
+            "summary",
+            "full"
+          ]
+        }
+      },
+      "required": [
+        "settings"
+      ],
+      "additionalProperties": false
+    }
+  },
+  {
+    "name": "scenarios",
+    "description": "Application-owned reusable scenario prompts, separate from simulation state. List/get Markdown prompts; save a distilled, tested task as title + prompt. Saving does not run it. To replace an existing prompt, get its id/revision first and supply expectedRevision. Saving never runs a prompt. The model submits a scenario only through its explicitly connected Bridge conversation.",
+    "operation": "control",
+    "inputSchema": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": [
+            "list",
+            "get",
+            "save"
+          ]
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "prompt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 19000
+        },
+        "expectedRevision": {
+          "type": "string",
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "action"
+      ],
+      "additionalProperties": false
+    }
+  }
+]

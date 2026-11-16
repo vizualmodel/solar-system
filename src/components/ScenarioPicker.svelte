@@ -1,11 +1,12 @@
 ﻿<script lang="ts">
  import {FileText,Rocket,Plus,X,LoaderCircle} from 'lucide-svelte';
- import {client} from '../../companion/client';
+ import {scenarioSummaries as scenarios,operateScenario} from '../model-integration/scenarios';
+ import {agentState} from '../model-integration/agent-state';
  import {parseScenarioMarkdown,type ScenarioPrompt} from '../lib/scenario-prompts';
  import {missions,missionById,startMission} from '../lib/mission';
  import {simulationState,status,save} from '../lib/store';
  let {onsetup}:{onsetup:(text:string)=>Promise<void>}=$props();
- const {panel,scenarios}=client;
+
  const files=import.meta.glob('../../scenarios/*.md',{query:'?raw',import:'default',eager:true}) as Record<string,string>;
  const bundled=Object.entries(files).map(([path,text])=>parseScenarioMarkdown(path.split('/').pop()!.slice(0,-3),text));
  let catalogue=$state(bundled.map(({prompt,...summary})=>summary));
@@ -14,13 +15,13 @@
  let displayed=$state<{title:string;prompt:string}|null>(null),busy=$state(false),error=$state('');
  let title=$state(''),task=$state('');
  const selectedMission=$derived(missionById.has(selected));
- $effect(()=>{if($panel.connected)void client.listScenarios().then(result=>catalogue=result.scenarios).catch(e=>error=(e as Error).message);});
+ $effect(()=>{void operateScenario({action:'list'}).then(result=>catalogue=result.scenarios).catch(e=>error=(e as Error).message);});
  $effect(()=>{if($scenarios.length)catalogue=$scenarios;});
  async function viewPrompt(){
   error='';const mission=missionById.get(selected);
   if(mission){displayed={title:mission.title,prompt:`${mission.description}\n\n${mission.accuracy}\n\nChapters\n${mission.chapters.map(c=>c.title).join('\n')}`};dialog='prompt';return;}
   busy=true;
-  try{const prompt:ScenarioPrompt|undefined=$panel.connected?(await client.getScenario(selected)).scenario:bundled.find(p=>p.id===selected);if(!prompt)throw new Error('Connect the application to read this scenario prompt.');displayed=prompt;dialog='prompt';}
+  try{const prompt:ScenarioPrompt|undefined=(await operateScenario({action:'get',id:selected})).scenario;if(!prompt)throw new Error('Connect the application to read this scenario prompt.');displayed=prompt;dialog='prompt';}
   catch(e){error=(e as Error).message;}finally{busy=false;}
  }
  async function execute(){
@@ -28,12 +29,12 @@
   error='';
   if(selectedMission){window.dispatchEvent(new Event('solar:save-cameras'));simulationState.update(s=>startMission(s,selected));status.set('Mission ready · press Play mission');save();return;}
   busy=true;
-  try{const prompt=(await client.getScenario(selected)).scenario;await onsetup(`# ${prompt.title}\n\n${prompt.prompt}`);status.set('Scenario setup submitted · follow progress in the research companion');}
+  try{const prompt=(await operateScenario({action:'get',id:selected})).scenario;if(!prompt)throw Error('Scenario was not found.');await onsetup(`# ${prompt.title}\n\n${prompt.prompt}`);status.set('Scenario setup submitted · follow progress in the Bridge agent');}
   catch(e){error=(e as Error).message;}finally{busy=false;}
  }
  async function add(event:SubmitEvent){
   event.preventDefault();if(busy)return;busy=true;error='';
-  try{const result=await client.saveScenario(title.trim(),task.trim());catalogue=result.scenarios;selected=result.scenario.id;dialog=null;title='';task='';status.set('Scenario saved · use the rocket to set it up');}
+  try{const result=await operateScenario({action:'save',title:title.trim(),prompt:task.trim()});if(!result.scenario)throw Error('Scenario save was not acknowledged.');catalogue=result.scenarios;selected=result.scenario.id;dialog=null;title='';task='';status.set('Scenario saved · use the rocket to set it up');}
   catch(e){error=(e as Error).message;}finally{busy=false;}
  }
  function modal(node:HTMLDialogElement){node.showModal();return{destroy(){node.close();}};}
@@ -45,7 +46,7 @@
  </select>
  <div class="scenario-actions" role="group" aria-label="Scenario actions">
   <button onclick={viewPrompt} disabled={!selected||busy} title="View prompt" aria-label="View prompt"><FileText size={17}/></button>
-  <button class="setup" onclick={execute} disabled={!!$simulationState.mission||!selected||busy||(!selectedMission&&!$panel.connected)} title={selectedMission?'Set up guided mission':!$panel.connected?'Connect the application to set up a scenario':'Set up scenario'} aria-label="Set up scenario">{#if busy}<LoaderCircle size={17} class="spin"/>{:else}<Rocket size={17}/>{/if}</button>
+  <button class="setup" onclick={execute} disabled={!!$simulationState.mission||!selected||busy||(!selectedMission&&!$agentState.ready)} title={selectedMission?'Set up guided mission':!$agentState.ready?'Connect Bridge and start a conversation to set up a scenario':'Set up scenario'} aria-label="Set up scenario">{#if busy}<LoaderCircle size={17} class="spin"/>{:else}<Rocket size={17}/>{/if}</button>
   <button onclick={()=>{error='';dialog='add';}} disabled={busy} title="Add scenario" aria-label="Add scenario"><Plus size={17}/></button>
  </div>
 </div>
@@ -60,9 +61,9 @@
   <form onsubmit={add}>
    <label class="field">Title<input bind:value={title} required maxlength="120" placeholder="For example, Jupiter’s moons"/></label>
    <label class="field">Prompt<textarea bind:value={task} required maxlength="19000" rows="9" placeholder="Describe the scene, cameras, date, and settings to prepare."></textarea></label>
-   {#if !$panel.connected}<p>Saving requires the local application connection. Your draft stays here while you reconnect.</p>{/if}
+   <p>{import.meta.env.MODE==='model-development'?'Scenarios are saved as model files through the connected development service.':'Scenarios are saved in this browser independently of the agent connection.'}</p>
    {#if error}<p class="scenario-error" role="alert">{error}</p>{/if}
-   <footer><button type="button" disabled={busy} onclick={()=>{dialog=null;error='';}}>Cancel</button><button class="setup" type="submit" disabled={busy||!$panel.connected||!title.trim()||!task.trim()}>{busy?'Saving…':'Save scenario'}</button></footer>
+   <footer><button type="button" disabled={busy} onclick={()=>{dialog=null;error='';}}>Cancel</button><button class="setup" type="submit" disabled={busy||!title.trim()||!task.trim()}>{busy?'Saving…':'Save scenario'}</button></footer>
   </form>
  {/if}
 </dialog>{/if}

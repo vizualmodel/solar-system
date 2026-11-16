@@ -1,1 +1,0 @@
-import '@vizualmodel/companion/doctor';

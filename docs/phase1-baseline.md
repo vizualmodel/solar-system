@@ -1,3 +1,5 @@
+> Historical architecture: superseded by the standard Bridge client and runtime-free model-service migration. Current setup is in the root README and model-service/README.md; the embedded Workspace agent and bundled Companion described below are retired.
+
 > Historical report. Since 16 November 2026, canonical shared source lives in C:/dev/vizualmodel-bridge/packages/companion; Solar vendors a verified snapshot. References below to the standalone checkout or removed validation folders describe the historical setup.
 
 # Phase 1 technical baseline

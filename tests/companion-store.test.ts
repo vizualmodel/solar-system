@@ -7,7 +7,7 @@ import { defaultSimulationState } from '../src/lib/simulation-state';
 Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem: () => null } });
 Object.defineProperty(globalThis, 'location', { configurable: true, value: { search: '' } });
 const { simulationState, command } = await import('../src/lib/store');
-const { applyBrowserRequest } = await import('../companion/browser-adapter');
+const { applyBrowserRequest } = await import('../model-service/browser-adapter');
 const request = { id: 'store-test', expiresAt: Date.now() + 60_000 };
 
 test('adapter changes and reads the actual UI store, preserving playback', () => {

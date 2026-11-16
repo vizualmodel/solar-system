@@ -7,11 +7,11 @@ import { OVIEDO,SPAIN_ECLIPSE_TIME,surfaceCamera,spainEclipseState } from '../sr
 import { positions,type Ephemeris } from '../src/lib/ephemeris';
 import { displayPosition } from '../src/lib/presentation';
 import { defaultSimulationState,validateSimulationState } from '../src/lib/simulation-state';
-import { parseControl } from '../companion/control-schema';
-import { snapshot,assertRestored } from '../companion/state';
+import { parseControl } from '../model-service/control-schema';
+import { snapshot,assertRestored } from '../model-service/state';
 Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>null,setItem:()=>{}}});
 Object.defineProperty(globalThis,'location',{configurable:true,value:{search:''}});
-const {applyControl}=await import('../companion/controls');
+const {applyControl}=await import('../model-service/controls');
 
 test('local observer frames remain orthonormal, rotate with Earth, and preserve the astronomical camera',()=>{
  for(const observer of [OVIEDO,{latitude:90,longitude:0,altitude:0},{latitude:-90,longitude:132,altitude:1000}]){

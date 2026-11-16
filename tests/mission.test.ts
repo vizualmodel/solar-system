@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {missions,missionById,missionDuration,startMission,stopMission,seekMission,advanceMission,missionTime,missionElapsed,elapsedSeconds,validateMissionDocument,missionCaption} from '../src/lib/mission';
 import {defaultSimulationState,validateSimulationState} from '../src/lib/simulation-state';
 import {missionPose,validateMissionContext,historicalVector,METRES_PER_AU} from '../src/lib/mission-flight';
-import {snapshot,assertRestored} from '../companion/state';
+import {snapshot,assertRestored} from '../model-service/state';
 const doc=missions[0],context=validateMissionContext(JSON.parse(readFileSync('public/data/missions/apollo-11.json','utf8')));
 
 test('Apollo document is a short authored mission with valid historical windows and captions',()=>{

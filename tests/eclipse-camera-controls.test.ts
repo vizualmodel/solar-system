@@ -6,7 +6,7 @@ import { PerspectiveCamera,Vector3 } from 'three';
 import { SolarRenderer } from '../src/lib/renderer';
 import { interactiveEclipsePose,manualCameraPatch,surfaceCamera,alignmentCamera,OVIEDO,SPAIN_ECLIPSE_TIME,spainEclipseState,solarContactGap } from '../src/lib/eclipse-camera';
 import { defaultSimulationState,validateSimulationState } from '../src/lib/simulation-state';
-import { snapshot,assertRestored } from '../companion/state';
+import { snapshot,assertRestored } from '../model-service/state';
 const positions={earth:[1,0,0],moon:[0.998,0,0],sun:[0,0,0]} as Record<string,[number,number,number]>;
 
 test('Spain preset starts at first external contact with a wider Sun-centred view',()=>{

@@ -1,6 +1,8 @@
+> Current connection: all model agent controls use VizualModel Bridge. Local MCP is developer tooling supplied by the runtime-free model service. Historical wire names and .companion storage are retained for compatibility.
+
 # Solar Observatory MCP controls
 
-The companion exposes eleven application tools and four development tools (15 total). Existing controls use the acknowledged browser command boundary, not browser automation or source edits. `detail: "full"` returns simulation state, all view IDs, workspace panels, chart selection and expanded sections. Requests expire, validate before mutation, and require the owning browser to acknowledge the current build. On timeout, read fresh state; do not silently replay the command.
+The runtime-free model service exposes eleven application tools and four development tools (15 total). Bridge exposes those eleven application controls plus four browser convenience tools; it does not expose developer build/activation tools. Existing controls use the acknowledged browser command boundary. `detail: "full"` returns simulation state, all view IDs, workspace panels, chart selection and expanded sections. Requests expire and validate before mutation. Developer operations require the owning browser to acknowledge the current build. On timeout, read fresh state; do not silently replay the command.
 
 | Tool | UI interactions / payload |
 | --- | --- |
@@ -12,8 +14,8 @@ The companion exposes eleven application tools and four development tools (15 to
 | `satellites` | Optional viewId; `settings`: visible ISS/Hubble IDs, magnification={iss,hubble}, explore data epoch, focus, closeUp=iss (true-size tracking, real-time speed, paused). Unavailable focus is rejected. |
 | `views` | action=select/split/close/layout; optional viewId, direction=row/column or validated recursive layout. Side by side=row. Six-view maximum; final view cannot close. |
 | `session` | action=rename/save/export/import/new/preset; name, simulationState or preset=overview/earth/inner/spain-eclipse. Import accepts JSON and pauses, export returns JSON instead of a file chooser/download. New returns previousSimulationState as a backup and saves the new session. Legacy scenario import argument remains accepted. |
-| `scenarios` | action=list/get/save; id, title, prompt, expectedRevision. App-owned reusable Markdown task prompts. See [Scenarios](scenarios.md). Saving updates the dropdown; running uses the app UI and an ordinary companion turn. |
-| `workspace` | `settings`: settings/charts/companion/about panel visibility, tab=scene/camera, sections={satellites,eclipse,layers,scale,bodies,interest,perspective}. |
+| `scenarios` | action=list/get/save; id, title, prompt, expectedRevision. Model-owned reusable task prompts. See [Scenarios](scenarios.md). Saving updates the dropdown; setup uses the app UI and its ready Bridge conversation. |
+| `workspace` | `settings`: settings/charts/companion/about panel visibility, tab=scene/camera, sections={satellites,eclipse,layers,scale,bodies,interest,perspective}. The legacy companion key remains for compatibility. |
 | `charts` | `settings`: from/to body IDs, open, nextClosestApproach. Search uses the current simulation range, pauses at the result, and fails explicitly if no next event exists. |
 
 Examples:
@@ -32,7 +34,7 @@ Examples:
 
 Panel navigation is separate from saved simulation scenarios. `workspace` cannot approve Codex actions, grant permissions, or transfer browser ownership. Companion conversation/approval controls remain user-owned. Links to external data sources and browser file dialogs are represented by their semantic data operations, not automated clicks.
 
-Shared server/runtime changes require a companion backend restart. Browser/panel changes require `build_candidate` and `activate_candidate`; activation restores the current scenario. The agent is instructed to use these existing tools before considering source changes.
+Shared development-server changes require a backend restart. To update an accepted development view, use `build_candidate` and `activate_candidate`; activation preserves full simulation state and requires browser acknowledgement. Static/hosted builds use their normal reviewed release workflow. Package changes require exact dependency/lockfile updates.
 
 ## Recurring Windows sandbox setup error
 

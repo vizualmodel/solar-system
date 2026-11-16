@@ -1,13 +1,18 @@
 import { get } from 'svelte/store';
 import { tick } from 'svelte';
 import { simulationState } from '../lib/store';
-import { applyBrowserRequest } from '../../companion/browser-adapter';
+import { applyBrowserRequest } from '../../model-service/browser-adapter';
 import { createModelAdapter } from './adapter';
 import type { ClosestApproach } from '../lib/closest-approach';
+import type {ModelRequest,ModelTarget} from '@vizualmodel/bridge-model-client';
+import {controlSchemas} from '../../model-service/control-schema';
+import {executeModelControl} from './control-adapter';
+import {operateScenario} from './scenarios';
 
 // Constructed only after explicit tab approval. Uses the existing model dispatcher.
 export function createBrowserActionAdapter(modelBuild: string, dataVersion: string) {
-  let revision = 0, worker: Worker | undefined, pending = false, cancel: (() => void) | undefined;
+  let revision = 0, worker: Worker | undefined, pending = false, cancel: (() => void) | undefined, active = true;
+  const assertActive = () => { if (!active) throw Error('Agent access disconnected; no new model command applied.'); };
   const unsubscribe = simulationState.subscribe(() => revision++);
   const adapter = createModelAdapter({ modelBuild, dataVersion,
     read: () => ({ state: get(simulationState), revision }),
@@ -32,5 +37,12 @@ export function createBrowserActionAdapter(modelBuild: string, dataVersion: stri
       });
     },
   });
-  return { ...adapter, dispose() { unsubscribe(); cancel?.(); worker?.terminate(); worker = undefined; } };
+  return {execute(request:ModelRequest,target:ModelTarget){
+    assertActive();
+    if(request.action==='scenarios'||Object.hasOwn(controlSchemas,request.action)){
+      if(request.protocol!==1||request.sessionId!==target.sessionId||request.generation!==target.generation||!target.read||request.action!=='get_simulation_state'&&!target.operate||!Number.isFinite(request.deadline)||request.deadline<=Date.now())throw Error('Invalid, expired or unauthorized model request.');
+      return request.action==='scenarios'?operateScenario(request.inputs):executeModelControl(request.action,request.inputs,{id:request.id,expiresAt:request.deadline},assertActive);
+    }
+    return adapter.execute(request as import('./adapter').ModelRequest,target);
+  },dispose() { active = false; unsubscribe(); cancel?.(); worker?.terminate(); worker = undefined; } };
 }

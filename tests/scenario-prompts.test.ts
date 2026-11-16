@@ -4,9 +4,9 @@ import {mkdtemp,readFile,writeFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {join,resolve,sep} from 'node:path';
 import {parseScenarioMarkdown,scenarioMarkdown} from '../src/lib/scenario-prompts';
-import {createScenarioRepository} from '../companion/scenario-repository';
+import {createScenarioRepository} from '../model-service/scenario-repository';
 import {defaultSimulationState,STORAGE_KEY} from '../src/lib/simulation-state';
-import {snapshot,assertRestored,restorationReceipt} from '../companion/state';
+import {snapshot,assertRestored,restorationReceipt} from '../model-service/state';
 test('prompt files have a title and task text, separate from saved simulation state',()=>{
  const parsed=parseScenarioMarkdown('eclipse',scenarioMarkdown('Spain eclipse','Use two cameras.\nPause playback.'));
  assert.equal(parsed.title,'Spain eclipse');assert.equal(parsed.prompt,'Use two cameras.\nPause playback.');

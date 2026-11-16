@@ -1,10 +1,10 @@
 # Solar Observatory
 
-Browser-based Solar System model built with Svelte 5, TypeScript and Three.js. It uses approximate Keplerian calculations derived from reference ephemeris data, not numerical N-body integration. The browser model and MCP service work without vmblu; the optional embedded conversation panel currently expects a separate vmblu workspace. See the [Phase 1 baseline](docs/phase1-baseline.md) for inventory, verification and remaining gaps.
+Browser-based Solar System model built with Svelte 5, TypeScript and Three.js. It uses approximate Keplerian calculations derived from reference ephemeris data, not numerical N-body integration. The model runs independently; its Agent panel and scenario setup use the installed VizualModel Bridge through the versioned `@vizualmodel/bridge-model-client` npm package. See the [Phase 1 baseline](docs/phase1-baseline.md) for inventory, verification and remaining gaps.
 
 ## Run
 
-The local development checkout is organized at `C:/dev/blu/space/solar-system`. Its shared Companion source is maintained in the Bridge repository and bundled here for independent installation; see [the bundled package](packages/companion/README.md).
+The local development checkout is organized at `C:/dev/blu/space/solar-system`. Shared connection and runtime-free development packages are installed from npm. No Bridge checkout or bundled Companion source is needed; see [the model service boundary](model-service/README.md).
 
 Requires Node.js 22.12+ (developed with Node 24) and Git LFS for the bundled 8K star map. To clone:
 
@@ -33,7 +33,7 @@ npm run preview
 
 ## Deployment
 
-For existing MCP controls, run `npm run application` and open http://127.0.0.1:5180/. See [Local service and MCP](companion/README.md). Its library is bundled in `packages/companion`; no sibling checkout or LLM login is required. The service serves an accepted build independently of source edits.
+For existing MCP controls, run `npm run application` and open http://127.0.0.1:5180/. See [Model development service](model-service/README.md). The service starts no agent; agent access always uses the desktop Bridge. No sibling checkout is required. The service serves an accepted build independently of source edits.
 
 The application is hosted in the `solar-system` Vercel project under the `vizualmodel-projects` team. Its public address is https://solar-system-ashen-one.vercel.app. Use this address for the catalogue's live application link. Each blueprint can use its own Vercel project address without additional DNS setup.
 
@@ -66,7 +66,7 @@ The search uses the same approximate orbital model as the simulation, scans dist
 
 `src/lib/ephemeris.ts` is the pure physical model (AU, days, J2000 ecliptic). `catalog.ts` describes bodies. `simulation-state.ts` owns serializable configuration and validation; `scenario.ts` retains compatibility exports. `store.ts` manages the shared clock, persistence, layouts and the command boundary. `renderer.ts` owns each view's Three.js resources, floating origin, presentation scaling and camera controls. Svelte components own the UI. The rendering layer never feeds magnified positions back into physics.
 
-`Command` / `command()` and the browser adapter expose validated operations through eleven application MCP tools plus four development tools. A ready browser and local Node service are required. See [MCP controls](docs/mcp-controls.md). Solar config sets `agent: false`; legacy Codex modules are preserved but no application-owned LLM starts. The Agent panel reports that VizualModel Bridge is not available yet. Manual operation requires no agent. Transport-independent model actions live in `src/model-integration`; the retired cloud relay is absent.
+`Command` / `command()` and the browser adapter expose validated model operations. Bridge receives fifteen declared tools: four convenience operations and eleven grouped controls. The optional runtime-free local service also supplies developer MCP, candidate builds and acknowledged state restoration; see [MCP controls](docs/mcp-controls.md). The single Agent panel and scenario setup use the versioned Bridge client. Manual operation and saving browser scenario prompts require no agent. Transport-independent model actions live in `src/model-integration`.
 
 ## Data and accuracy
 
@@ -114,13 +114,13 @@ Run `npm run satellite-data` to refresh both bundled snapshots, then build and a
 
 Earth surface/alignment observers, telescope controls, illustrative local landscape and geometric lunar umbra/penumbra views are implemented. See [local landscape](docs/local-landscape.md). Cached satellite population filters and object cards are documented in [satellite populations](docs/satellite-populations.md).
 
-The [Apollo 11 educational mission](docs/mission-scenarios.md) has an independent timeline, split views, dashboard and opt-in archival audio. Its separate 1969 context uses hourly Horizons vectors with Hermite interpolation and no extrapolation. Spacecraft paths, staging, attitudes and telemetry are authored illustrations, not flight solutions or navigation data. Deterministic mission playback works without an agent. Markdown scenario prompts require the optional workspace integration for execution and are separate from saved simulation state.
+The [Apollo 11 educational mission](docs/mission-scenarios.md) has an independent timeline, split views, dashboard and opt-in archival audio. Its separate 1969 context uses hourly Horizons vectors with Hermite interpolation and no extrapolation. Spacecraft paths, staging, attitudes and telemetry are authored illustrations, not flight solutions or navigation data. Deterministic mission playback works without an agent. Markdown scenario setup uses an explicitly started or resumed Bridge conversation and is separate from saved simulation state.
 
 ## Licensing and operational limits
 
-No top-level source-code license has been selected. Owner permission to include the companion source does not establish an open-source license. NASA distribution is not a blanket license for all third-party material; source-specific rights review remains open. ISS/Hubble and Apollo model credits, transformations and media references are retained in the feature documents. Apollo audio credits are in `public/audio/apollo-11/credits.json`; object-image provenance is in `src/data/object-images.json`. The bundled Draco decoder retains its Apache 2.0 license in `public/models/draco/LICENSE.txt`.
+No top-level source-code license has been selected. Public npm availability of the owner-controlled VizualModel packages does not establish an open-source license. NASA distribution is not a blanket license for all third-party material; source-specific rights review remains open. ISS/Hubble and Apollo model credits, transformations and media references are retained in the feature documents. Apollo audio credits are in `public/audio/apollo-11/credits.json`; object-image provenance is in `src/data/object-images.json`. The bundled Draco decoder retains its Apache 2.0 license in `public/models/draco/LICENSE.txt`.
 
-Static hosting serves the browser app only; it does not run the local Node/MCP bridge or workspace agent. Include dev dependencies during Vercel installation, since Vite and companion imports are build requirements. Large JavaScript chunks and per-view GPU memory remain operational costs. `.companion`, `.env*`, `.codex`, caches and generated builds must remain private and untracked.
+Static hosting serves the browser app; the installed desktop Bridge supplies agent access after consent. Include dev dependencies during installation because Vite and shared scenario validation are build requirements. For local agent use, build and select `dist` with Bridge's **Open model folder** action; ordinary Vite and port-5180 developer origins are not approved agent origins. Large JavaScript chunks and per-view GPU memory remain operational costs. `.companion`, `.env*`, `.codex`, caches and generated builds must remain private and untracked.
 
 ## Future work
 

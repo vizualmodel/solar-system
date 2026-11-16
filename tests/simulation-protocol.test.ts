@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { parseSimulationTime } from '../companion/simulation-protocol';
+import { parseSimulationTime } from '../model-service/simulation-protocol';
 const state = { time: '2027-01-01T00:00:00.000Z' };
 
 test('timestamps require timezone, validate calendar, and normalize offsets', () => {
