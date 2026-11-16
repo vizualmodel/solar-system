@@ -6,7 +6,7 @@ The same Solar implementation was subsequently built cleanly from source `dd8b24
 
 The owner confirmed Chrome cold launch from a stopped Bridge, real hosted conversation, labels inversion/readback and Earth–Mars investigation on installed 0.2.3: “Everything worked ok - latency was reasonable.” The approximate four or five approvals were accepted by the owner; no exact duration or approval count was measured. The agent independently observed the exact HTTPS origin with model-control permission in the native 0.2.3 window.
 
-No new raw numerical reply was pasted, so the exact local-folder numerical result below is not relabeled as the HTTPS result. Denied action, Stop, reconnect and two concurrent real tabs are tracked separately in the [0.2.3 acceptance record](https://github.com/vizualmodel/bridge/blob/bridge/connection-proof/docs/acceptance-0.2.3.md).
+No new raw numerical reply was pasted, so the exact local-folder numerical result below is not relabeled as the HTTPS result. Denied action, Stop, reconnect and two concurrent real tabs are tracked separately in the [0.2.3 acceptance record](https://github.com/vizualmodel/bridge/blob/e9b20cacd69e0c51ca9d4611ed8105ee1329502e/docs/acceptance-0.2.3.md).
 
 ## Reconnect and feedback follow-up
 
@@ -41,6 +41,6 @@ The accepted private bundle was built from the implementation working tree befor
 
 Bridge's follow-up uses the selected model's advertised reasoning effort by default instead of inheriting the developer's high effort. Trusted settings expose supported effort choices; global Codex configuration is unchanged. The panel shows effort, elapsed time and where action approval appears. Attribution of the earlier delay to effort is a plausible inference, not a controlled causal finding. No approval is bypassed.
 
-Structured owner evidence and exact runtime restrictions: https://github.com/vizualmodel/bridge/blob/bridge/connection-proof/docs/solar-panel-acceptance.json and https://github.com/vizualmodel/bridge/blob/bridge/connection-proof/docs/codex-runtime.md .
+Structured owner evidence and exact runtime restrictions: https://github.com/vizualmodel/bridge/blob/e9b20cacd69e0c51ca9d4611ed8105ee1329502e/docs/solar-panel-acceptance.json and https://github.com/vizualmodel/bridge/blob/e9b20cacd69e0c51ca9d4611ed8105ee1329502e/docs/codex-runtime.md .
 
 Review source and explicitly approved isolated previews only. No merge, production model deployment or public installer release. Concurrent real-tab isolation passed. Manual Stop was explicitly skipped; broader release checks still include graphical resume/failure/offline flows, denied browser permissions and keyboard/narrow-window checks.
