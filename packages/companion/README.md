@@ -1,7 +1,7 @@
-# Bundled companion source
+# Bridge-owned Companion snapshot
 
-Snapshot of the local `@vizualmodel/companion` 0.0.0 library from `C:/dev/companion`, included with the owner's explicit permission for the Phase 1 baseline on 7 November 2026. The original checkout is unchanged. This is a private npm package installed through `file:packages/companion`; it is not published to npm.
+This independently installable snapshot of `@vizualmodel/companion` is maintained from `vizualmodel-bridge/packages/companion`. The standalone Companion checkout was retired on 16 November 2026. The package is private and is not published to npm.
 
-`src/` preserves the existing service, browser transport, MCP adapter, state-preserving activation, diagnostics and legacy agent modules. Solar config sets `agent: false`; legacy Codex runtime modules are retained for compatibility and tests, not started by Solar. `tests/` and the counter example preserve the library's validation resources.
+From the Bridge checkout, run `node scripts/sync-companion.mjs` to refresh this snapshot and `node scripts/sync-companion.mjs --check` to detect drift. Solar remains installable without access to the private Bridge repository. Run this package's check/tests and Solar's check/tests after shared changes.
 
-From the Solar repository root, run `npm ci`, then `npm --prefix packages/companion run check` and `npm --prefix packages/companion test`. The example is development-only. No source license has yet been selected; inclusion permission is not a general redistribution license.
+The library preserves model loopback transport, browser acknowledgement, MCP, state restoration and candidate activation. Solar sets `agent: false`; desktop connection and supported runtime behavior belong to Bridge. Application-specific tools and scientific state stay in Solar.

@@ -1,10 +1,12 @@
+> Historical report. Since 16 November 2026, canonical shared source lives in C:/dev/vizualmodel-bridge/packages/companion; Solar vendors a verified snapshot. References below to the standalone checkout or removed validation folders describe the historical setup.
+
 # Phase 1 technical baseline
 
 Date: 7 November 2026. Scope: consolidate the existing Solar System model; no catalog redesign, new blueprint schema, ChatGPT integration or scientific/rendering rewrite.
 
 ## Source and history
 
-Authoritative checkout: `C:/dev/blu/solar-system`, origin `https://github.com/vizualmodel/solar-system.git`. Fetched remote main and original local HEAD both equal `e0597d8cd94d02c790e1b4edcedd3ac5e5915294`; there were no divergent commits. The newer implementation was uncommitted on `companion/local-pilot`. Phase 1 preserves it on `phase1/solar-system-baseline` for review without replacing main or rewriting history. The exact published commit is recorded in the pull request and final report rather than a self-referential SHA in this file.
+Authoritative checkout: `C:/dev/blu/space/solar-system`, origin `https://github.com/vizualmodel/solar-system.git`. Fetched remote main and original local HEAD both equal `e0597d8cd94d02c790e1b4edcedd3ac5e5915294`; there were no divergent commits. The newer implementation was uncommitted on `companion/local-pilot`. Phase 1 preserves it on `phase1/solar-system-baseline` for review without replacing main or rewriting history. The exact published commit is recorded in the pull request and final report rather than a self-referential SHA in this file.
 
 Authenticated GitHub access to solar-system, vizualmodel.ai and blueprints.vizualmodel.ai was verified with ADMIN permission. Website repositories were not modified. `C:/dev/solar-system-validation` is a generated static copy, not an authoritative source repository.
 

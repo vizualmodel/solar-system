@@ -1,9 +1,10 @@
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {execFileSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import * as THREE from 'three';
 import {WebGLProgram} from 'three/src/renderers/webgl/WebGLProgram.js';
 import {EarthVisual} from '../src/lib/earth-visual';
-const output='C:/dev/earth-shader-check/generated';mkdirSync(output,{recursive:true});
+const output=fileURLToPath(new URL('../.validation/earth-shaders/',import.meta.url));mkdirSync(output,{recursive:true});
 const earth=new EarthVisual(new THREE.MeshStandardMaterial(),{maxTextureSize:8192,deviceMemory:8,anisotropy:4,
  acquire:()=>({promise:Promise.resolve(new THREE.Texture()),release(){}})},console.warn);
 const surface=earth.material,cloud=earth.children.find(m=>m.name==='Earth · animated clouds') as THREE.Mesh;
@@ -26,7 +27,7 @@ for(const [name,material,normalMap] of [['surface',surface,false],['surface-norm
   map:name.startsWith('surface'),mapUv:'uv',normalMap,normalMapTangentSpace:normalMap,normalMapUv:'uv',vertexUvs:true,
   doubleSided:name==='cloud',flipSided:name==='atmosphere',alphaTest:name==='cloud',opaque:!material.transparent};
  new WebGLProgram({getContext:()=>gl,debug:{checkShaderErrors:false}} as any,name,parameters as any,{});
- const validator=process.argv[2]??'C:/dev/earth-shader-check/compiler/bin/glslang.exe';
+ const validator=process.argv[2]??process.env.GLSLANG_VALIDATOR??'glslangValidator';
  console.log(execFileSync(validator,['-l',...files],{encoding:'utf8',windowsHide:true}).trim());
 }
 earth.dispose();console.log('All Earth shader variants compiled and linked as GLSL ES 3.00.');

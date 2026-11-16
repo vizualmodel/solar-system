@@ -2,7 +2,7 @@ import type { CompanionConfig } from './contracts';
 import { createHash, randomUUID } from 'node:crypto';
 import { execFile, spawn } from 'node:child_process';
 import { promisify } from 'node:util';
-import { mkdir, readFile, writeFile, rename, readdir, open, unlink } from 'node:fs/promises';
+import { mkdir, readFile, writeFile, rename, readdir, open, unlink, stat } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 const exec = promisify(execFile);
 export function createWorkspace(config: CompanionConfig) {
@@ -48,6 +48,23 @@ async function saveWorkspace(record: any) {
   const path = join(storage, 'workspace.json');
   await writeFile(path + '.tmp', JSON.stringify(record, null, 2)); await rename(path + '.tmp', path);
 }
+async function relocateWorkspace(previousCheckout: string) {
+  const previous = resolve(previousCheckout);
+  if (previous === cwd) throw new Error('Relocation requires a different previous checkout.');
+  try { await stat(previous); throw new Error('Previous checkout still exists; refusing to copy workspace ownership.'); }
+  catch (error) { if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error; }
+  const unlock = await lockWorkspace();
+  try {
+    const path = join(storage, 'workspace.json');
+    const original = await readFile(path, 'utf8');
+    const record = JSON.parse(original);
+    if (record.application !== config.application.id || resolve(record.checkout) !== previous) throw new Error('Workspace does not belong to the stated application and previous checkout.');
+    if (record.baseRevision) await exec('git', ['merge-base', '--is-ancestor', record.baseRevision, 'HEAD'], { cwd });
+    await writeFile(join(storage, `workspace-before-relocation-${Date.now()}.json`), original, { flag: 'wx' });
+    await saveWorkspace({ ...record, checkout: cwd });
+    return { previousCheckout: previous, checkout: cwd, workingCopyId: record.workingCopyId, activeBuild: record.activeBuild?.id };
+  } finally { await unlock(); }
+}
 function runNode(args: string[], log: (text: string) => void = () => {}): Promise<void> {
   return new Promise((resolve, reject) => {
     const child = spawn(process.execPath, args, { cwd, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
@@ -73,5 +90,5 @@ async function initialBuild(validate = false, log: (text: string) => void = text
   return { id, ...source };
 }
 
-return { cwd, storage, lockWorkspace, identity, loadWorkspace, saveWorkspace, runNode, initialBuild, stopBuilds };
+return { cwd, storage, lockWorkspace, identity, loadWorkspace, saveWorkspace, relocateWorkspace, runNode, initialBuild, stopBuilds };
 }

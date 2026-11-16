@@ -4,6 +4,8 @@ Browser-based Solar System model built with Svelte 5, TypeScript and Three.js. I
 
 ## Run
 
+The local development checkout is organized at `C:/dev/blu/space/solar-system`. Its shared Companion source is maintained in the Bridge repository and bundled here for independent installation; see [the bundled package](packages/companion/README.md).
+
 Requires Node.js 22.12+ (developed with Node 24) and Git LFS for the bundled 8K star map. To clone:
 
 ```sh

@@ -1,3 +1,5 @@
+> Historical report. Since 16 November 2026, canonical shared source lives in C:/dev/vizualmodel-bridge/packages/companion; Solar vendors a verified snapshot. References below to the standalone checkout or removed validation folders describe the historical setup.
+
 # Solar Observatory local companion pilot
 
 > Historical development notes preserved during Phase 1. Local paths, linked-library setup, runtime versions and independent-agent behavior below describe earlier work. For current setup use [Local service and MCP](../companion/README.md); the library is now bundled and Solar starts with `agent: false`.
@@ -32,7 +34,7 @@ For 0.162.0-alpha.2, generated protocol types were compared with 0.160.1, includ
 In PowerShell:
 
 ```powershell
-cd C:\dev\blu\solar-system
+cd C:\dev\blu\space\solar-system
 npm.cmd install
 codex --version
 codex login status
