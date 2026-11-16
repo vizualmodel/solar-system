@@ -3,14 +3,14 @@ import assert from 'node:assert/strict';
 import { get } from 'svelte/store';
 import { defaultSimulationState } from '../src/lib/simulation-state';
 import { z } from 'zod';
-import { controlSchemas, parseControl } from '../companion/control-schema';
+import { controlSchemas, parseControl } from '../model-service/control-schema';
 Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>null,setItem:()=>{}}});
 Object.defineProperty(globalThis,'location',{configurable:true,value:{search:''}});
 const {simulationState}=await import('../src/lib/store');
-const {applyBrowserRequest}=await import('../companion/browser-adapter');
+const {applyBrowserRequest}=await import('../model-service/browser-adapter');
 const {workspaceUi}=await import('../src/lib/workspace-ui');
 const {settingsSections}=await import('../src/lib/settings-sections');
-const {tools}=await import('../companion/tools');
+const {tools}=await import('../model-service/tools');
 const request={id:'test',expiresAt:Date.now()+60000};
 const call=(method:string,params:any={})=>applyBrowserRequest({...request,method,...params});
 

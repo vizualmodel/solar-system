@@ -3,7 +3,8 @@
   import { X } from 'lucide-svelte';
   import { createBridgeClient } from '../model-integration/bridge-client';
   import { bridgeNotice, conversationFeedback, failureFeedback, type ConversationMessage } from '../model-integration/panel-feedback';
-  let { onclose }: { onclose: () => void } = $props();
+  import {agentState} from '../model-integration/agent-state';
+  let { onclose,request=null,onresult=()=>{} }: { onclose: () => void;request?:{id:string;text:string}|null;onresult?:(error?:string)=>void } = $props();
   let client: ReturnType<typeof createBridgeClient>;
   let connected=$state(false),control=$state(false),operate=$state(false),status=$state('disconnected'),notice=$state('Connect this model to the installed VizualModel Bridge.'),text=$state(''),runtime=$state(''),model=$state(''),effort=$state(''),started=$state(0),elapsed=$state(0);
   let messages=$state<ConversationMessage[]>([]);
@@ -13,6 +14,9 @@
   let codingTasks=$state<any[]>([]);
   function download(value:any){const blob=new Blob([value.text],{type:value.format==='json'?'application/json':'text/markdown'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='conversation.'+(value.format==='json'?'json':'md');link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
   const busy=$derived(['working','connecting-runtime','waiting-for-approval','stopping'].includes(status));
+  let sentRequest='';
+  $effect(()=>agentState.set({connected,ready:connected&&status==='ready'&&!busy}));
+  $effect(()=>{if(request&&request.id!==sentRequest){sentRequest=request.id;try{if(!connected||status!=='ready'||busy)throw Error('Connect through Bridge and start or resume a conversation before setting up a scenario.');const id=client.send(request.text);messages=[...messages,{id:'user:'+id,role:'user',text:request.text}];status='working';onresult();}catch(error){onresult((error as Error).message);}}});
   $effect(()=>{if(busy){started=Date.now();elapsed=0;}else{started=0;elapsed=0;}});
   const labels:Record<string,string>={archive:'History · choose a conversation',disconnected:'Disconnected',connecting:'Opening Bridge',ready:'Ready',working:'Working', 'connecting-runtime':'Connecting Codex','waiting-for-approval':'Waiting for approval',interrupted:'Stopped',stopped:'Stopped',stopping:'Stopping',error:'Error',failed:'Failed'};
   function showFailure(message:unknown){issueId??=crypto.randomUUID();messages=bridgeNotice(messages,issueId,failureFeedback(message,connected?operate?'control':'read':'disconnected'));}
@@ -41,7 +45,7 @@
   {#if busy}<p class="hint">{elapsed}s elapsed. {status==='waiting-for-approval'?'Review the request in Bridge.':status==='connecting-runtime'?'Starting your model’s Codex conversation.':'Waiting for Codex. Any action approval appears in Bridge when Codex requests it.'}</p>{/if}
   {#if notice}<p class="hint">{notice}</p>{/if}
   {#if !connected}
-    <label class="permission"><input type="checkbox" bind:checked={control} disabled={status==='connecting'||status==='waiting-for-approval'}/> Request control of time, labels and orbits</label>
+    <label class="permission"><input type="checkbox" bind:checked={control} disabled={status==='connecting'||status==='waiting-for-approval'}/> Request control of this model, views and scenarios</label>
     <button class="primary" disabled={status==='connecting'||status==='waiting-for-approval'} onclick={()=>action(()=>client.connect(control))}>Connect agent / Open Bridge</button>
     <details><summary>Connection help</summary><p>Use the private Bridge installer supplied with this build. Open Bridge from the Start menu, then retry here. A failed launch can also mean the browser prompt was cancelled or blocked.</p><p>Confirm the application launch, allow this site to contact the local service if requested, then review this model’s access in Bridge. Manual controls work independently.</p></details>
   {:else}

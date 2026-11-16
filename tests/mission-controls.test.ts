@@ -6,7 +6,7 @@ import {defaultSimulationState} from '../src/lib/simulation-state';
 Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>null,setItem:()=>{}}});
 Object.defineProperty(globalThis,'location',{configurable:true,value:{search:''}});
 const {simulationState,command}=await import('../src/lib/store');
-const {applyBrowserRequest}=await import('../companion/browser-adapter');
+const {applyBrowserRequest}=await import('../model-service/browser-adapter');
 
 test('mission locks normal time/session controls and observations expose both clocks',()=>{
  const active=startMission(defaultSimulationState('earth'),'apollo-11');simulationState.set(active);

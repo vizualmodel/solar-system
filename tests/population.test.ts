@@ -5,8 +5,8 @@ import {defaultSimulationState,validateSimulationState} from '../src/lib/simulat
 import {SATELLITE_WINDOW} from '../src/lib/satellites';
 Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>null,setItem:()=>{}}});
 Object.defineProperty(globalThis,'location',{configurable:true,value:{search:''}});
-const {applyControl}=await import('../companion/controls');
-const {parseControl}=await import('../companion/control-schema');
+const {applyControl}=await import('../model-service/controls');
+const {parseControl}=await import('../model-service/control-schema');
 
 test('cached populations contain genuine distinct GEO, LEO, Starlink and MEO/GPS records',()=>{
  assert.equal(new Set(population.map(row=>row.id)).size,population.length);

@@ -1,13 +1,11 @@
-# Solar Observatory companion workspace
+# Solar Observatory model workspace
 
-`npm.cmd run application` starts this application's tool/state service without an application-owned LLM runtime. Its optional contextual overlay currently uses vmblu; MCP controls, browser ownership and build activation remain here and work without that overlay. Preserve normal simulation operation when the agent is offline. See `companion/README.md` for current setup and boundaries.
-
-This repository includes the companion library in `packages/companion` through a local `@vizualmodel/companion` dependency. Its source was included with explicit owner permission in Phase 1. `companion/` contains solar-specific configuration, tool definitions, state/browser adapters and small launch/UI entry points. See `packages/companion/README.md` for provenance and validation. The source checkout and accepted browser build are deliberately separate.
+`npm.cmd run application` starts the runtime-free model development service. Solar's single Agent panel and scenario setup use VizualModel Bridge through the installed `@vizualmodel/bridge-model-client` npm package. `model-service/` owns domain tools, state adapters, readiness and development configuration. There is no bundled generic client/runtime or Workspace agent iframe. Models must run normally with Bridge disconnected. See `model-service/README.md`.
 
 ## Development environment
 
 - Windows PowerShell, Node.js and `npm.cmd` are available. Python is not a prerequisite; use Node for a scripting fallback rather than assuming `python` exists.
-- Prefer the normal patch tool. If a sandbox helper fails during setup, report the actual error and preserve runtime approvals. Do not repeatedly retry a failing helper, disable the sandbox, or change ownership/ACLs automatically. `npm.cmd run companion:doctor` provides read-only workspace diagnostics.
+- Prefer the normal patch tool. If a sandbox helper fails during setup, report the actual error and preserve runtime approvals. Do not repeatedly retry a failing helper, disable the sandbox, or change ownership/ACLs automatically. `npm.cmd run model:doctor` provides read-only workspace diagnostics.
 - Use `rg --files` and existing imports to find files. Use targeted reads/searches; avoid guessing filenames and dumping whole documentation or minified CSS into the conversation.
 - Use explicit UTF-8 for PowerShell file reads/writes. Check `$LASTEXITCODE` after external commands before continuing dependent steps; a failed Python/Node command must not silently fall through to the next edit.
 
@@ -25,7 +23,7 @@ This repository includes the companion library in `packages/companion` through a
 2. Preserve existing work. Use a named personal branch or isolated checkout, never main/master. Do not reset Git, remove edits, push, deploy, or publish.
 3. Implement in this checkout with normal permitted tools. Do not start another app server or coordinating agent.
 4. Add meaningful tests for changed behavior. Run focused tests while developing as needed.
-5. For shared library edits, run its check/tests first; sourceRoots includes the library so candidate identity covers bundled source too. Call `solar_companion.build_candidate` once the change is ready. It already runs the full Svelte check, test suite and companion build. Do not duplicate these or run a preliminary `npm.cmd run build` unless investigating a failure or validating a separate production-only change. Do not overwrite `.companion` records/builds manually.
+5. For shared package edits, run package checks/tests/builds first, publish the reviewed version, and update exact model dependencies/lockfile; do not copy shared source into Solar. Call `solar_companion.build_candidate` once the change is ready. It already runs the full Svelte check, test suite and model development build. Do not duplicate these or run a preliminary `npm.cmd run build` unless investigating a failure or validating a separate production-only change. Do not overwrite `.companion` records/builds manually.
 6. Call `solar_companion.activate_candidate`. Only this companion-owned operation captures state, switches the served build, waits for readiness, restores state, and verifies acknowledgement. Automatic development reload is not activation.
 7. Read the live state again and report results in the current conversation. If activation fails, preserve source edits, inspect the error, fix and build again. `rollback_build` restores the previous served build without rolling back source.
 

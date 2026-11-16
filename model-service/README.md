@@ -1,0 +1,11 @@
+# Model-owned development adapter
+
+Solar owns its control schemas, tools, browser execution, state capture/restoration, renderer readiness and reusable scenario files. The shared runtime-free implementation is installed as @vizualmodel/model-development. Agent connection is exclusively the desktop Bridge via @vizualmodel/bridge-model-client, including scenario setup; no Workspace iframe or generic runtime is bundled here.
+
+Use npm run dev for current source, npm run build for a static package, and npm run application for the accepted-development-build service on loopback port 5180. Existing .companion records/builds, storage keys and wire routes are retained for compatibility. Preserve them; source edits do not overwrite an accepted build. Build/activate/rollback tools require a controlled browser and acknowledged full-state restoration. The optional developer MCP entry is model-service/mcp.ts; it is not an in-model agent or default research-agent connector. npm run model:doctor checks local development prerequisites without starting an agent.
+
+Hosted/static builds and normal Vite development combine bundled prompts with user prompts saved in this browser. Development-service builds use the live file catalogue and require the service to acknowledge saves. Saving never runs a prompt; setup requires a ready, explicitly started/resumed Bridge conversation. Old native conversation histories remain owned by their original runtime; this migration does not move or delete them.
+
+For local agent use, build the static package and select its `dist` folder with Bridge's **Open model folder** action. Bridge accepts hosted HTTPS models and its own approved package origins. Ordinary Vite and port-5180 development origins are not approved agent origins. Their manual controls and developer build/activation workflow remain available; opening them does not grant agent access.
+
+All current control tools are declared for Bridge by src/model-integration/control-tools.json. Regenerate it with npm run bridge:schema after changing control schemas/descriptions. Domain validation remains in Solar. The browser adapter acknowledges actual changes and preserves unrelated simulation state; the shared client enforces the consent-bound protocol and no-replay behavior.

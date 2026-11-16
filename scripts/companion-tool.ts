@@ -9,7 +9,7 @@ if (!response.ok) throw new Error('Application service unavailable.');
 const bootstrap = await response.json();
 const client = new Client({ name: 'solar-local-diagnostics', version: '1' });
 try {
-  await client.connect(new StdioClientTransport({ command: process.execPath, args: ['--import', 'tsx', 'companion/mcp.ts'], cwd, env: { ...process.env, COMPANION_URL: origin, COMPANION_TOKEN: bootstrap.token } as Record<string, string> }));
+  await client.connect(new StdioClientTransport({ command: process.execPath, args: ['--import', 'tsx', 'model-service/mcp.ts'], cwd, env: { ...process.env, COMPANION_URL: origin, COMPANION_TOKEN: bootstrap.token } as Record<string, string> }));
   const name = process.argv[2] ?? 'get_simulation_state';
   const result = await client.callTool({ name, arguments: JSON.parse(process.argv[3] ?? '{}') }, undefined, { timeout: 240000 });
   if (result.isError) throw new Error(JSON.stringify(result.content));

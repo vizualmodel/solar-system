@@ -1,5 +1,5 @@
 <script lang="ts">
- import { renderedViews, failedViews } from '../../companion/readiness';
+ import { renderedViews, failedViews } from '../../model-service/readiness';
  import { onMount } from 'svelte';
  import { Columns2,Rows2,X,Crosshair } from 'lucide-svelte';
  import { simulationState,status,updateView,split,close } from '../lib/store';
