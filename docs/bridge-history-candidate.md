@@ -12,4 +12,4 @@ Validation: Svelte check reports zero errors/warnings; 184 tests pass, including
 
 Delegated editing is not exposed by this candidate. The Windows coding sandbox refused the positive inside-workspace canary because split filesystem read restrictions cannot be enforced. Stage B and the final Stage C journey remain blocked pending separate runtime/sandbox validation. No unrestricted fallback was added.
 
-Build locally for private review only. Git deployment remains disabled. No merge, hosted deployment, public installer or binary commit is authorized. The closed [0.2.3 acceptance record](https://github.com/vizualmodel/bridge/blob/bridge/connection-proof/docs/acceptance-0.2.3.md), including the owner's skipped manual Stop, remains unchanged.
+Build locally for private review only. Git deployment remains disabled. No merge, hosted deployment, public installer or binary commit is authorized. The closed [0.2.3 acceptance record](https://github.com/vizualmodel/bridge/blob/e9b20cacd69e0c51ca9d4611ed8105ee1329502e/docs/acceptance-0.2.3.md), including the owner's skipped manual Stop, remains unchanged.
